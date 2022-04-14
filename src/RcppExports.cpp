@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // make_leslie_matrixR
 Eigen::SparseMatrix<double> make_leslie_matrixR(const Eigen::Map<Eigen::ArrayXd> sx, const Eigen::Map<Eigen::ArrayXd> fx, double srb, double age_span, int fx_idx);
 RcppExport SEXP _leapfrog_make_leslie_matrixR(SEXP sxSEXP, SEXP fxSEXP, SEXP srbSEXP, SEXP age_spanSEXP, SEXP fx_idxSEXP) {
@@ -55,11 +60,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// leapfrogR
+Rcpp::NumericVector leapfrogR(const Rcpp::NumericMatrix& basepop, const Rcpp::NumericVector& Sx, const Rcpp::NumericVector& netmigr, const Rcpp::NumericVector& asfr, const Rcpp::NumericVector& births_sex_prop);
+RcppExport SEXP _leapfrog_leapfrogR(SEXP basepopSEXP, SEXP SxSEXP, SEXP netmigrSEXP, SEXP asfrSEXP, SEXP births_sex_propSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type basepop(basepopSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type Sx(SxSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type netmigr(netmigrSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type asfr(asfrSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type births_sex_prop(births_sex_propSEXP);
+    rcpp_result_gen = Rcpp::wrap(leapfrogR(basepop, Sx, netmigr, asfr, births_sex_prop));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_leapfrog_make_leslie_matrixR", (DL_FUNC) &_leapfrog_make_leslie_matrixR, 5},
     {"_leapfrog_ccmppR", (DL_FUNC) &_leapfrog_ccmppR, 7},
     {"_leapfrog_ccmpp_leslieR", (DL_FUNC) &_leapfrog_ccmpp_leslieR, 7},
+    {"_leapfrog_leapfrogR", (DL_FUNC) &_leapfrog_leapfrogR, 5},
     {NULL, NULL, 0}
 };
 

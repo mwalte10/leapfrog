@@ -92,3 +92,20 @@ ccmpp_leslieR <- function(basepop, sx, fx, gx, srb, age_span, fx_idx) {
     .Call(`_leapfrog_ccmpp_leslieR`, basepop, sx, fx, gx, srb, age_span, fx_idx)
 }
 
+#' Simulate leapfrog model
+#'
+#' @param basepop base population: matrix indexed by (age, sex)
+#' @param sx three-dimensional array of survival probabilities indexed by (age, sex, year)
+#' @param asfr two-dimensional array of age-specific fertility rates (age, year)
+#'
+#'
+#' @details
+#' The first year of `sx`, `asfr`, `srb`, and `netmig` is not used. This is assumed
+#' to apply to the base year population (consistent with Spectrum).
+#'
+#' @export
+#' 
+leapfrogR <- function(basepop, Sx, netmigr, asfr, births_sex_prop) {
+    .Call(`_leapfrog_leapfrogR`, basepop, Sx, netmigr, asfr, births_sex_prop)
+}
+
