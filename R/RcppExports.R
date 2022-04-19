@@ -105,7 +105,7 @@ ccmpp_leslieR <- function(basepop, sx, fx, gx, srb, age_span, fx_idx) {
 #'
 #' @export
 #' 
-leapfrogR <- function(basepop, Sx, netmigr, asfr, births_sex_prop) {
-    .Call(`_leapfrog_leapfrogR`, basepop, Sx, netmigr, asfr, births_sex_prop)
+leapfrogR <- function(demp, projp, hiv_strat_type = "full") {
+    .Call(`_leapfrog_leapfrogR`, demp, projp, hiv_strat_type)
 }
 
