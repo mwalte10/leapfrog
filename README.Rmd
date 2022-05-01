@@ -25,6 +25,8 @@ Leapfrog is a multistate population projection model for demographic and HIV epi
 
 The name _leapfrog_ is in honor of [Professor](https://blogs.lshtm.ac.uk/alumni/2018/07/16/obituary-professor-basia-zaba/) Basia [Zaba](https://translate.google.co.uk/#view=home&op=translate&sl=pl&tl=en&text=%C5%BBaba).
 
+*Note: the CCMPP model and implementation of Bayesian Population Reconstruction in TMB previously here have moved to a separate repository: https://www.github.com/mrc-ide/ccmpp.tmb*
+
 ## Installation
 
 Install the development version from [GitHub](https://github.com/mrc-ide/leapfrog) via devtools:
@@ -67,232 +69,16 @@ pop_proj$population[ , c(1, 2, 10)]
 ```
 
 
-### TMB 
-
-Calculate a population projection in TMB. Carry forward 2000 values for two further periods
-to explore projections.
-
-```{r tmb_example}
-
-basepop_init <- as.numeric(burkina.faso.females$baseline.pop.counts)
-
-sx_init <- burkina.faso.females$survival.proportions
-sx_init <- cbind(sx_init, `2005` = sx_init[ , "2000"], `2010` = sx_init[ , "2000"])
-
-fx_init <- burkina.faso.females$fertility.rates[4:10, ]
-fx_init <- cbind(fx_init, `2005` = fx_init[ , "2000"], `2010` = fx_init[ , "2000"])
-
-gx_init <- burkina.faso.females$migration.proportions
-gx_init <- cbind(gx_init, `2005` = gx_init[ , "2000"], `2010` = gx_init[ , "2000"])
-
-log_basepop_mean <- as.vector(log(basepop_init))
-logit_sx_mean <- as.vector(qlogis(sx_init))
-log_fx_mean <- as.vector(log(fx_init))
-gx_mean <- as.vector(gx_init)
-  
-data <- list(log_basepop_mean = log_basepop_mean,
-             logit_sx_mean = logit_sx_mean,
-             log_fx_mean = log_fx_mean,
-             gx_mean = gx_mean,
-             srb = rep(1.05, ncol(sx_init)),
-             age_span = 5,
-             n_steps = ncol(sx_init),
-             fx_idx = 4L,
-             fx_span = 7L,
-             census_log_pop = log(burkina.faso.females$census.pop.counts),
-             census_year_idx = c(4L, 6L, 8L, 10L))
-par <- list(log_tau2_logpop = 0,
-            log_tau2_sx = 0,
-            log_tau2_fx = 0,
-            log_tau2_gx = 0,
-            log_basepop = log_basepop_mean,
-            logit_sx = logit_sx_mean,
-            log_fx = log_fx_mean,
-            gx = gx_mean)
-
-obj <- make_tmb_obj(data, par)
-
-init_sim <- obj$report()
-matrix(init_sim$population, nrow = 17)[ , data$census_year_idx]
-
-obj$fn()
-
-
-input <- list(data = data, par_init = par)
-fit <- fit_tmb(input)
-
-fit[1:6]
-
-```
-
-Sample from posterior distribution and generate outputs
-
-```{r sample_tmb}
-fit <- sample_tmb(fit)
-
-
-
-colnames(fit$sample$population) <- 1:ncol(fit$sample$population)
-colnames(fit$sample$migrations) <- 1:ncol(fit$sample$migrations)
-colnames(fit$sample$fx) <- 1:ncol(fit$sample$fx)
-
-init_pop_mat <- ccmpp_leslieR(basepop_init, sx_init, fx_init, gx_init,
-                              srb = rep(1.05, ncol(sx_init)), age_span = 5, fx_idx = 4)
-
-df <- crossing(year = seq(1960, 2015, 5),
-               sex = "female",
-               age_group = c(sprintf("%02d-%02d", 0:15*5, 0:15*5+4), "80+")) %>%
-  mutate(init_pop = as.vector(init_pop_mat))
-
-census_pop <- crossing(sex = "female",
-                       age_group = c(sprintf("%02d-%02d", 0:15*5, 0:15*5+4), "80+")) %>%
-  bind_cols(as_tibble(burkina.faso.females$census.pop.counts)) %>%
-  gather(year, census_pop, `1975`:`2005`) %>%
-  type_convert(cols(year = col_double()))
-
-df <- df %>%
-  left_join(census_pop) %>%
-  bind_cols(as_tibble(fit$sample$population)) %>%
-  gather(sample, value, `1`:last_col())
-
-agepop <- df %>%
-  group_by(year, sex, age_group) %>%
-  summarise(init_pop = mean(init_pop),
-            census_pop = mean(census_pop),
-            mean = mean(value),
-            lower = quantile(value, 0.025),
-            upper = quantile(value, 0.975))
-
-totalpop <- df %>%
-  group_by(year, sample) %>%
-  summarise(init_pop = sum(init_pop),
-            census_pop = sum(census_pop),
-            value = sum(value)) %>%
-  group_by(year) %>%
-  summarise(init_pop = mean(init_pop),
-            census_pop = mean(census_pop),
-            mean = mean(value),
-            lower = quantile(value, 0.025),
-            upper = quantile(value, 0.975))
-```
-
-```{r, fig.height = 4, fig.width = 5, fig.align = "center", out.width = "60%"}
-ggplot(totalpop, aes(year, mean, ymin = lower, ymax = upper)) +
-  geom_ribbon(alpha = 0.2) +
-  geom_line() +
-  geom_line(aes(y = init_pop), linetype = "dashed") +
-  geom_point(aes(y = census_pop), shape = 4, color = "darkred", stroke = 2) +
-  scale_y_continuous("Total population (millions)", labels = scales::number_format(scale = 1e-6)) +
-  expand_limits(y = 0) +
-  labs(x = NULL) +
-  theme_light() +
-  ggtitle("BFA females: total population")
-```
-
-```{r, fig.height = 5, fig.width = 7, fig.align = "center", out.width = "80%"}
-ggplot(agepop, aes(age_group, mean, ymin = lower, ymax = upper, group = 1)) +
-  geom_ribbon(alpha = 0.2) +
-  geom_line() +
-  geom_line(aes(y = init_pop), linetype = "dashed") +
-  geom_point(aes(y = census_pop), color = "darkred") +
-  facet_wrap(~year, scales = "free_y") + 
-  scale_y_continuous("Total population (thousands)", labels = scales::number_format(scale = 1e-3)) +
-  expand_limits(y = 0) +
-  theme_light() +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1),
-        panel.grid = element_blank()) +
-  ggtitle("BFA females: population by age")
-```
-
-Posterior distribution for TFR:
-
-```{r asfr, fig.height = 4, fig.width = 5, fig.align = "center", out.width = "60%"}
-
-asfr <- crossing(year = seq(1960, 2010, 5),
-                 age_group = sprintf("%02d-%02d", 3:9*5, 3:9*5+4)) %>%
-  mutate(init_asfr = as.vector(fx_init)) %>%
-  bind_cols(as_tibble(fit$sample$fx)) %>%
-  gather(sample, value, `1`:last_col()) 
-
-tfr <- asfr %>%
-  group_by(year, sample) %>%
-  summarise(init_tfr = 5 * sum(init_asfr),
-            value = 5 * sum(value)) %>%
-  group_by(year) %>%
-  summarise(init_tfr = mean(init_tfr),
-         mean = mean(value),
-         lower = quantile(value, 0.025),
-         upper = quantile(value, 0.975))
-
-ggplot(tfr, aes(year, mean, ymin = lower, ymax = upper)) +
-  geom_ribbon(alpha = 0.2) +
-  geom_line() +
-  geom_line(aes(y = init_tfr), linetype = "dashed") +
-  scale_y_continuous("Total fertility rate", limits = c(5, 9)) +
-  labs(x = NULL) +
-  theme_light() +
-  theme(panel.grid = element_blank()) +
-  ggtitle("BFA: total fertility rate")
-
-```
-
-```{r migrations, fig.height = 4, fig.width = 5, fig.align = "center", out.width = "60%"}
-
-migrations <- crossing(year = seq(1960, 2010, 5),
-                       age_lower = 0:16*5) %>%
-  mutate(init_migrations = init_sim$migrations) %>%
-  bind_cols(as_tibble(fit$sample$migrations)) %>%
-  gather(sample, value, `1`:last_col()) 
-
-total_migrations <- migrations %>%
-  group_by(year, sample) %>%
-  summarise(init_migrations = sum(init_migrations),
-            value = sum(value)) %>%
-  group_by(year) %>%
-  summarise(init_migrations = mean(init_migrations),
-         mean = mean(value),
-         lower = quantile(value, 0.025),
-         upper = quantile(value, 0.975))
-
-ggplot(total_migrations, aes(year, mean, ymin = lower, ymax = upper)) +
-  geom_ribbon(alpha = 0.2) +
-  geom_line() +
-  geom_line(aes(y = init_migrations), linetype = "dashed") +
-  scale_y_continuous("Net migration (1000s)",
-                     labels = scales::number_format(scale=1e-3)) +
-  labs(x = NULL) +
-  theme_light() +
-  theme(panel.grid = element_blank()) +
-  ggtitle("BFA: total net migrations (1000s)")
-
-```
-
 
 ## Code design
 
 ### Simulation model
 
-The simulation model is implemented as templated C++ code in `src/ccmpp.h`.
+The simulation model is implemented as templated C++ code in `src/leapfrog.h`.
 This is  the simulation model may be developed as a standalone C++ library
 that can be called by other software without requiring R-specific code features.
 The code uses header-only open source libraries to maximize portability.
 
-
-### Statistical inference
-
-The objective function (the negative log posterior density) is implemented 
-in templated C++ code in the script `src/TMB/ccmpp_tmb.hpp` using probability 
-functions from the Template Model Builder ([TMB](https://github.com/kaskr/adcomp/wiki)) 
-R package. The TMB package provides estimates of the gradient
-of the objective function via automatic differentiation and Laplace approximation
-to integrate random effects. 
-
-The posterior density can also be sampled from using Hamiltonian Monte Carlo in 
-Stan using the [_tmbstan_](https://cran.r-project.org/web/packages/tmbstan/index.html) package.
-
-Latent Gaussian models for model components (fertiliy rates, mortality rates,
-migration rates) are implemented using linear algebra tools from the _Eigen_ 
-package. Predicted values are coerced into arrays for the CCMPP model inputs.
 
 
 ### R functions
@@ -317,14 +103,3 @@ via [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html) and
   Leslie matrix specification. However, multi-dimensional arrays in the _boost_
   library may be preferable. 
 
-### TMB
-
-* Further investigation is needed about the portability of AD objective function
-  DLLs outside of the R environment.
-
-TMB model code and testing are implemented following templates from the 
-[`TMBtools`](https://github.com/mlysy/TMBtools) package with guidance for package 
-development with both TMB models and Rcpp code. 
-  * To add a new TMB model, save the model template in the `src/TMB` with extension `.hpp`. The model name must match the file name. The signature is slightly different -- see other `.hpp` files for example.
-  * Call `TMBtools::export_models()` to export the new TMB model to the meta-model list.
-  * When constructing the objective function with `TMB::MakeADFun`, use `DLL= "leapfrog_TMBExports"` and add an additional value `model = "<model_name>"` to the `data` list.

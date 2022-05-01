@@ -3,7 +3,7 @@ Title: Multistate Population Projection Model for Demographic and HIV Estimation
 Version: 0.0.1
 Authors@R: 
     person(given = "Jeffrey",
-           family = "Last",
+           family = "Eaton",
            role = c("aut", "cre"),
            email = "jeffrey.eaton@imperial.ac.uk",
            comment = c(ORCID = "0000-0001-7728-728X"))
@@ -14,13 +14,11 @@ LazyData: true
 RoxygenNote: 7.1.2
 LinkingTo: 
     Rcpp,
-    RcppEigen,
-    TMB
+    RcppEigen
 Imports:
     methods,
     Matrix,
-    Rcpp,
-    TMB (>= 1.7.16)
+    Rcpp
 Suggests:
     covr,
     eppasm (>= 0.5.12),

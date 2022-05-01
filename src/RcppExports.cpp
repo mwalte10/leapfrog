@@ -61,17 +61,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // leapfrogR
-Rcpp::NumericVector leapfrogR(const Rcpp::NumericMatrix& basepop, const Rcpp::NumericVector& Sx, const Rcpp::NumericVector& netmigr, const Rcpp::NumericVector& asfr, const Rcpp::NumericVector& births_sex_prop);
-RcppExport SEXP _leapfrog_leapfrogR(SEXP basepopSEXP, SEXP SxSEXP, SEXP netmigrSEXP, SEXP asfrSEXP, SEXP births_sex_propSEXP) {
+Rcpp::List leapfrogR(const Rcpp::List& demp, const Rcpp::List& projp, const Rcpp::String hiv_strat_type, const int hiv_steps_per_year);
+RcppExport SEXP _leapfrog_leapfrogR(SEXP dempSEXP, SEXP projpSEXP, SEXP hiv_strat_typeSEXP, SEXP hiv_steps_per_yearSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type basepop(basepopSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type Sx(SxSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type netmigr(netmigrSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type asfr(asfrSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type births_sex_prop(births_sex_propSEXP);
-    rcpp_result_gen = Rcpp::wrap(leapfrogR(basepop, Sx, netmigr, asfr, births_sex_prop));
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type demp(dempSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type projp(projpSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::String >::type hiv_strat_type(hiv_strat_typeSEXP);
+    Rcpp::traits::input_parameter< const int >::type hiv_steps_per_year(hiv_steps_per_yearSEXP);
+    rcpp_result_gen = Rcpp::wrap(leapfrogR(demp, projp, hiv_strat_type, hiv_steps_per_year));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -80,7 +79,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_leapfrog_make_leslie_matrixR", (DL_FUNC) &_leapfrog_make_leslie_matrixR, 5},
     {"_leapfrog_ccmppR", (DL_FUNC) &_leapfrog_ccmppR, 7},
     {"_leapfrog_ccmpp_leslieR", (DL_FUNC) &_leapfrog_ccmpp_leslieR, 7},
-    {"_leapfrog_leapfrogR", (DL_FUNC) &_leapfrog_leapfrogR, 5},
+    {"_leapfrog_leapfrogR", (DL_FUNC) &_leapfrog_leapfrogR, 4},
     {NULL, NULL, 0}
 };
 

@@ -21,7 +21,8 @@
 Rcpp::List
 leapfrogR(const Rcpp::List& demp,
 	  const Rcpp::List& projp,
-	  const Rcpp::String hiv_strat_type = "full") {
+	  const Rcpp::String hiv_strat_type = "full",
+	  const int hiv_steps_per_year = 10) {
 
   using namespace Rcpp;
   
@@ -81,8 +82,6 @@ leapfrogR(const Rcpp::List& demp,
   NumericVector artinit(hDS * hAG * NG * proj_years);
   artinit.attr("dim") = NumericVector::create(hDS, hAG, NG, proj_years);
  
-  const int hiv_steps_per_year = 10;
-
   if (hAG == hAG_FULL) {
     leapfrog_sim<double, NG, pAG, pIDX_FERT, pAG_FERT,
 		 pIDX_HIVADULT, hAG_FULL, hDS, hTS>

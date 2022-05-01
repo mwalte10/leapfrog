@@ -4,14 +4,14 @@
 \alias{leapfrogR}
 \title{Simulate leapfrog model}
 \usage{
-leapfrogR(basepop, Sx, netmigr, asfr, births_sex_prop)
+leapfrogR(demp, projp, hiv_strat_type = "full", hiv_steps_per_year = 10L)
 }
 \arguments{
 \item{basepop}{base population: matrix indexed by (age, sex)}
 
-\item{asfr}{two-dimensional array of age-specific fertility rates (age, year)}
-
 \item{sx}{three-dimensional array of survival probabilities indexed by (age, sex, year)}
+
+\item{asfr}{two-dimensional array of age-specific fertility rates (age, year)}
 }
 \description{
 Simulate leapfrog model

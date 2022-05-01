@@ -2,12 +2,8 @@
 
 export(ccmppR)
 export(ccmpp_leslieR)
-export(fit_tmb)
 export(leapfrogR)
 export(make_leslie_matrixR)
-export(make_tmb_obj)
-export(sample_tmb)
 importClassesFrom(Matrix,dgCMatrix)
 importFrom(Rcpp,sourceCpp)
 useDynLib(leapfrog, .registration = TRUE)
-useDynLib(leapfrog_TMBExports)
