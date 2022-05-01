@@ -22,6 +22,13 @@ Basia
 Reconstruction in TMB previously here have moved to a separate
 repository: <https://www.github.com/mrc-ide/ccmpp.tmb>*
 
+## Simulation model
+
+The simulation model is implemented in a header-only C++ library located
+in [`inst/include/leapfrog.h`](inst/include/leapfrog.h). This location
+allows the C++ code to be imported in other R packages via specifying
+`LinkingTo: leapfrog` in the `DESCRIPTION` file.
+
 ## Installation
 
 Install the development version from

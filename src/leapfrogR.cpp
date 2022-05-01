@@ -3,7 +3,6 @@
 
 #include "leapfrog.h"
 
-
 //' Simulate leapfrog model
 //'
 //' @param basepop base population: matrix indexed by (age, sex)
