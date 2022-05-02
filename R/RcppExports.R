@@ -94,10 +94,12 @@ ccmpp_leslieR <- function(basepop, sx, fx, gx, srb, age_span, fx_idx) {
 
 #' Simulate leapfrog model
 #'
-#' @param basepop base population: matrix indexed by (age, sex)
-#' @param sx three-dimensional array of survival probabilities indexed by (age, sex, year)
-#' @param asfr two-dimensional array of age-specific fertility rates (age, year)
-#'
+#' @param demp list of demographic input parameters (TODO: document)
+#' @param projp list of HIV projection parameters (TODO: document)
+#' @param hiv_strat_type stratification of HIV population, either "full"
+#'   (default; single-year ages) or "coarse" (aggregated age groups). 
+#' @param hiv_steps_per_year number of Euler integration steps per year
+#'   for HIV progression; default 10.
 #'
 #' @details
 #' The first year of `sx`, `asfr`, `srb`, and `netmig` is not used. This is assumed

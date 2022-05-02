@@ -6,6 +6,12 @@
 \usage{
 prepare_leapfrog_demp(pjnz)
 }
+\arguments{
+\item{pjnz}{path to PJNZ file}
+}
+\value{
+list of demographic input parameters
+}
 \description{
 Prepare demographic inputs from Spectrum PJNZ
 }

@@ -7,11 +7,15 @@
 leapfrogR(demp, projp, hiv_strat_type = "full", hiv_steps_per_year = 10L)
 }
 \arguments{
-\item{basepop}{base population: matrix indexed by (age, sex)}
+\item{demp}{list of demographic input parameters (TODO: document)}
 
-\item{sx}{three-dimensional array of survival probabilities indexed by (age, sex, year)}
+\item{projp}{list of HIV projection parameters (TODO: document)}
 
-\item{asfr}{two-dimensional array of age-specific fertility rates (age, year)}
+\item{hiv_strat_type}{stratification of HIV population, either "full"
+(default; single-year ages) or "coarse" (aggregated age groups).}
+
+\item{hiv_steps_per_year}{number of Euler integration steps per year
+for HIV progression; default 10.}
 }
 \description{
 Simulate leapfrog model

@@ -6,6 +6,17 @@
 \usage{
 prepare_leapfrog_projp(pjnz, hiv_steps_per_year = 10L, hTS = 3)
 }
+\arguments{
+\item{pjnz}{path to PJNZ file}
+
+\item{hiv_steps_per_year}{number of Euler integration steps per year; default 10}
+
+\item{hTS}{number of HIV treatment stages; default 3 (0-5 months,
+6-11 months, 12+ months)}
+}
+\value{
+list of HIV projection parameters
+}
 \description{
 Prepare adult HIV projection parameters from Spectrum PJNZ
 }

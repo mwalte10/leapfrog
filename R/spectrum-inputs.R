@@ -2,12 +2,12 @@
 read_sx <- function(pjnz, use_ep5=FALSE){
 
   if(use_ep5) {
-    dpfile <- grep(".ep5$", unzip(pjnz, list=TRUE)$Name, value=TRUE)
+    dpfile <- grep(".ep5$", utils::unzip(pjnz, list=TRUE)$Name, value=TRUE)
   } else {
-    dpfile <- grep(".DP$", unzip(pjnz, list=TRUE)$Name, value=TRUE)
+    dpfile <- grep(".DP$", utils::unzip(pjnz, list=TRUE)$Name, value=TRUE)
   }
 
-  dp <- read.csv(unz(pjnz, dpfile), as.is=TRUE)
+  dp <- utils::read.csv(unz(pjnz, dpfile), as.is=TRUE)
 
   exists_dptag <- function(tag, tagcol=1){tag %in% dp[,tagcol]}
   dpsub <- function(tag, rows, cols, tagcol=1){
@@ -31,7 +31,12 @@ read_sx <- function(pjnz, use_ep5=FALSE){
 }
 
 #' Prepare demographic inputs from Spectrum PJNZ
+#'
+#' @param pjnz path to PJNZ file
+#'
+#' @return list of demographic input parameters
 #' 
+#' @export
 prepare_leapfrog_demp <- function(pjnz) {
 
   demp <- eppasm::read_specdp_demog_param(pjnz)
@@ -51,7 +56,15 @@ prepare_leapfrog_demp <- function(pjnz) {
 }
 
 #' Prepare adult HIV projection parameters from Spectrum PJNZ
-#' 
+#'
+#' @param pjnz path to PJNZ file
+#' @param hiv_steps_per_year number of Euler integration steps per year; default 10
+#' @param hTS number of HIV treatment stages; default 3 (0-5 months,
+#'   6-11 months, 12+ months)
+#'
+#' @return list of HIV projection parameters
+#'
+#' @export
 prepare_leapfrog_projp <- function(pjnz, hiv_steps_per_year = 10L, hTS = 3) {
 
   projp <- eppasm::read_hivproj_param(pjnz)
@@ -109,7 +122,9 @@ prepare_leapfrog_projp <- function(pjnz, hiv_steps_per_year = 10L, hTS = 3) {
   ## v$who34percelig <- who34percelig
 
   v$art_dropout <- projp$art_dropout/100
-  v$t_ART_start <- min(unlist(apply(v$art15plus_num > 0, 1, which)))
+
+  proj_years <- as.integer(projp$yr_end - projp$yr_start + 1L)
+  v$t_ART_start <- min(c(unlist(apply(v$art15plus_num > 0, 1, which)), proj_years))
 
   ## New ART patient allocation options
   v$art_alloc_method <- projp$art_alloc_method
