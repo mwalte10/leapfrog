@@ -16,11 +16,13 @@ LinkingTo:
     Rcpp,
     RcppEigen
 Imports:
+    eppasm (>= 0.5.12),
     methods,
     Matrix,
     Rcpp
 Suggests:
     covr,
-    eppasm (>= 0.5.12),
     popReconstruct,
     testthat (>= 2.1.0)
+Remotes:
+    mrc-ide/eppasm
