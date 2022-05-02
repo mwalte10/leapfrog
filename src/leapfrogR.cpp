@@ -1,5 +1,4 @@
 #include <Rcpp.h>
-#include <RcppEigen.h>
 
 #include "leapfrog.h"
 
