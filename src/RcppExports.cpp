@@ -11,55 +11,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// make_leslie_matrixR
-Eigen::SparseMatrix<double> make_leslie_matrixR(const Eigen::Map<Eigen::ArrayXd> sx, const Eigen::Map<Eigen::ArrayXd> fx, double srb, double age_span, int fx_idx);
-RcppExport SEXP _leapfrog_make_leslie_matrixR(SEXP sxSEXP, SEXP fxSEXP, SEXP srbSEXP, SEXP age_spanSEXP, SEXP fx_idxSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::ArrayXd> >::type sx(sxSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::ArrayXd> >::type fx(fxSEXP);
-    Rcpp::traits::input_parameter< double >::type srb(srbSEXP);
-    Rcpp::traits::input_parameter< double >::type age_span(age_spanSEXP);
-    Rcpp::traits::input_parameter< int >::type fx_idx(fx_idxSEXP);
-    rcpp_result_gen = Rcpp::wrap(make_leslie_matrixR(sx, fx, srb, age_span, fx_idx));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ccmppR
-Rcpp::List ccmppR(const Eigen::Map<Eigen::VectorXd> basepop, const Eigen::Map<Eigen::MatrixXd> sx, const Eigen::Map<Eigen::MatrixXd> fx, const Eigen::Map<Eigen::MatrixXd> gx, const Eigen::Map<Eigen::VectorXd> srb, double age_span, int fx_idx);
-RcppExport SEXP _leapfrog_ccmppR(SEXP basepopSEXP, SEXP sxSEXP, SEXP fxSEXP, SEXP gxSEXP, SEXP srbSEXP, SEXP age_spanSEXP, SEXP fx_idxSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type basepop(basepopSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type sx(sxSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type fx(fxSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type gx(gxSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type srb(srbSEXP);
-    Rcpp::traits::input_parameter< double >::type age_span(age_spanSEXP);
-    Rcpp::traits::input_parameter< int >::type fx_idx(fx_idxSEXP);
-    rcpp_result_gen = Rcpp::wrap(ccmppR(basepop, sx, fx, gx, srb, age_span, fx_idx));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ccmpp_leslieR
-Eigen::MatrixXd ccmpp_leslieR(const Eigen::Map<Eigen::VectorXd> basepop, const Eigen::Map<Eigen::MatrixXd> sx, const Eigen::Map<Eigen::MatrixXd> fx, const Eigen::Map<Eigen::MatrixXd> gx, const Eigen::Map<Eigen::VectorXd> srb, double age_span, int fx_idx);
-RcppExport SEXP _leapfrog_ccmpp_leslieR(SEXP basepopSEXP, SEXP sxSEXP, SEXP fxSEXP, SEXP gxSEXP, SEXP srbSEXP, SEXP age_spanSEXP, SEXP fx_idxSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type basepop(basepopSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type sx(sxSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type fx(fxSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type gx(gxSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type srb(srbSEXP);
-    Rcpp::traits::input_parameter< double >::type age_span(age_spanSEXP);
-    Rcpp::traits::input_parameter< int >::type fx_idx(fx_idxSEXP);
-    rcpp_result_gen = Rcpp::wrap(ccmpp_leslieR(basepop, sx, fx, gx, srb, age_span, fx_idx));
-    return rcpp_result_gen;
-END_RCPP
-}
 // leapfrogR
 Rcpp::List leapfrogR(const Rcpp::List& demp, const Rcpp::List& projp, const Rcpp::String hiv_strat, const int hiv_steps_per_year);
 RcppExport SEXP _leapfrog_leapfrogR(SEXP dempSEXP, SEXP projpSEXP, SEXP hiv_stratSEXP, SEXP hiv_steps_per_yearSEXP) {
@@ -76,9 +27,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_leapfrog_make_leslie_matrixR", (DL_FUNC) &_leapfrog_make_leslie_matrixR, 5},
-    {"_leapfrog_ccmppR", (DL_FUNC) &_leapfrog_ccmppR, 7},
-    {"_leapfrog_ccmpp_leslieR", (DL_FUNC) &_leapfrog_ccmpp_leslieR, 7},
     {"_leapfrog_leapfrogR", (DL_FUNC) &_leapfrog_leapfrogR, 4},
     {NULL, NULL, 0}
 };

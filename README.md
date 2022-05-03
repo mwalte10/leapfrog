@@ -113,9 +113,9 @@ bench::mark(leapfrogR(demp, hivp, hiv_strat = "full"),
 #> # A tibble: 3 × 6
 #>   expression                                       min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>                                  <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 leapfrogR(demp, hivp, hiv_strat = "full")     8.96ms   9.39ms      105.    4.33MB     7.35
-#> 2 leapfrogR(demp, hivp, hiv_strat = "coarse")   1.61ms   1.73ms      566. 1006.65KB    12.1 
-#> 3 eppasm::simmod(fp)                            2.09ms   2.19ms      454.  939.42KB    11.7
+#> 1 leapfrogR(demp, hivp, hiv_strat = "full")     4.23ms   4.95ms      191.    4.33MB     20.5
+#> 2 leapfrogR(demp, hivp, hiv_strat = "coarse") 754.48µs 891.06µs     1085. 1006.65KB     16.9
+#> 3 eppasm::simmod(fp)                          974.85µs   1.11ms      864.    1.43MB     13.6
 ```
 
 ## Code design
