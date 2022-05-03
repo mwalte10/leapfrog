@@ -1,6 +1,6 @@
 #include <Rcpp.h>
 
-#include "leapfrog.h"
+#include "leapfrog-raw.h"
 
 //' Simulate leapfrog model
 //'
