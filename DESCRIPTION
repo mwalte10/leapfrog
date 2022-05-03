@@ -21,8 +21,8 @@ Imports:
     Matrix,
     Rcpp
 Suggests:
+    bench,
     covr,
-    popReconstruct,
     testthat (>= 2.1.0)
 Remotes:
     mrc-ide/eppasm

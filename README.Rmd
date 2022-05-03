@@ -50,7 +50,6 @@ from default country data for Botswana in Spectrum v2.13 (December 2021).
 Prepare model inputs.
 
 ```{r example}
-library(tidyverse)
 library(leapfrog)
 
 pjnz <- system.file("pjnz/bwa2021_v6.13.pjnz", package = "leapfrog")

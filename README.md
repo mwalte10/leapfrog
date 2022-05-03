@@ -51,7 +51,6 @@ constructed from default country data for Botswana in Spectrum v2.13
 Prepare model inputs.
 
 ``` r
-library(tidyverse)
 library(leapfrog)
 
 pjnz <- system.file("pjnz/bwa2021_v6.13.pjnz", package = "leapfrog")
@@ -113,9 +112,9 @@ bench::mark(leapfrogR(demp, hivp, hiv_strat = "full"),
 #> # A tibble: 3 × 6
 #>   expression                                       min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>                                  <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 leapfrogR(demp, hivp, hiv_strat = "full")     4.23ms   4.95ms      191.    4.33MB     20.5
-#> 2 leapfrogR(demp, hivp, hiv_strat = "coarse") 754.48µs 891.06µs     1085. 1006.65KB     16.9
-#> 3 eppasm::simmod(fp)                          974.85µs   1.11ms      864.    1.43MB     13.6
+#> 1 leapfrogR(demp, hivp, hiv_strat = "full")     4.34ms   5.01ms      194.    4.33MB     45.2
+#> 2 leapfrogR(demp, hivp, hiv_strat = "coarse")  761.4µs 967.22µs      971. 1006.65KB     34.8
+#> 3 eppasm::simmod(fp)                            1.01ms   1.29ms      741.    1.43MB     32.8
 ```
 
 ## Code design
