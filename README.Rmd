@@ -29,7 +29,9 @@ The name _leapfrog_ is in honor of [Professor](https://blogs.lshtm.ac.uk/alumni/
 
 ## Simulation model
 
-The simulation model is implemented in a header-only C++ library located in [`inst/include/leapfrog.h`](inst/include/leapfrog.h). This location allows the C++ code to be imported in other R packages via specifying `LinkingTo: leapfrog` in the `DESCRIPTION` file.
+The simulation model is implemented in a header-only C++ library located in [`inst/include/leapfrog-raw.h`](inst/include/leapfrog-raw.h). This location allows the C++ code to be imported in other R packages via specifying `LinkingTo: leapfrog` in the `DESCRIPTION` file.
+
+The simulation model is callable in R via a wrapper function `leafrogR()` created with [Rcpp](https://www.rcpp.org).
 
 ## Installation
 
@@ -42,43 +44,72 @@ devtools::install_github("mrc-ide/leapfrog")
 
 ## Example
 
-Construct a sparse Leslie matrix:
+The file `pjnz/bwa2021_v6.13.pjnz` contains an example Spectrum file constructed
+from default country data for Botswana in Spectrum v2.13 (December 2021).
+
+Prepare model inputs.
 
 ```{r example}
 library(tidyverse)
 library(leapfrog)
-library(popReconstruct)
 
-data(burkina_faso_females)
+pjnz <- system.file("pjnz/bwa2021_v6.13.pjnz", package = "leapfrog")
 
-make_leslie_matrixR(sx = burkina.faso.females$survival.proportions[,1],
-                    fx = burkina.faso.females$fertility.rates[4:10, 1],
-                    srb = 1.05,
-                    age_span = 5,
-                    fx_idx = 4)
+demp <- prepare_leapfrog_demp(pjnz)
+hivp <- prepare_leapfrog_projp(pjnz)
 ```
 
-Simulate a cohort component population projection:
+Simulate 'full' age group (single-year age) and 'coarse' age group (collapsed
+age groups) models.
 
-```{r ccmpp_sim}
-pop_proj <- ccmppR(basepop = as.numeric(burkina.faso.females$baseline.pop.counts),
-                   sx = burkina.faso.females$survival.proportions,
-                   fx = burkina.faso.females$fertility.rates[4:10, ],
-                   gx = burkina.faso.females$migration.proportions,
-                   srb = rep(1.05, ncol(burkina.faso.females$survival.proportions)),
-                   age_span = 5,
-                   fx_idx = 4)
-pop_proj$population[ , c(1, 2, 10)]
-
+```{r simulate_leapfrog}
+lsimF <- leapfrogR(demp, hivp, hiv_strat = "full")
+lsimC <- leapfrogR(demp, hivp, hiv_strat = "coarse")
 ```
 
+Compare the HIV prevalence age 15-49 years and AIDS deaths 50+ years. Deaths 50+ 
+years are to show some noticeable divergence between the `"full"` and `"coarse"` 
+age group simulations.
 
+```{r sim_prev}
+
+prevF <- colSums(lsimF$hivpop1[16:50,,],,2) / colSums(lsimF$totpop1[16:50,,],,2)
+prevC <- colSums(lsimC$hivpop1[16:50,,],,2) / colSums(lsimC$totpop1[16:50,,],,2)
+
+deathsF <- colSums(lsimF$hivdeaths[51:81,,],,2)
+deathsC <- colSums(lsimC$hivdeaths[51:81,,],,2)
+
+plot(1970:2030, prevF, type = "l", main = "Prevalence 15-49")
+lines(1970:2030, prevC, col = 2)
+
+plot(1970:2030, deathsF, type = "l", main = "AIDS Deaths 50+ years")
+lines(1970:2030, deathsC, col = 2)
+``` 
+
+### Benchmarking 
+
+_Note: The function `devtools::load_all()` invokes `pkgbuild::compile_dll()`,
+which executes with default arguemnt `debug = TRUE`. This compiles the package 
+with `-O0` compiler optimisation flags. For benchmarking, make sure to install 
+the package or compile the DLL with `pkgbuild::compile_dll(debug = FALSE)`._
+
+```{r benchmarking}
+library(bench)
+library(eppasm)
+
+fp <- eppasm::prepare_directincid(pjnz)
+
+bench::mark(leapfrogR(demp, hivp, hiv_strat = "full"),
+            leapfrogR(demp, hivp, hiv_strat = "coarse"),
+            eppasm::simmod(fp),
+            check = FALSE)
+```
 
 ## Code design
 
 ### Simulation model
 
-The simulation model is implemented as templated C++ code in `src/leapfrog.h`.
+The simulation model is implemented as templated C++ code in `inst/include/leapfrog-raw.h`.
 This is  the simulation model may be developed as a standalone C++ library
 that can be called by other software without requiring R-specific code features.
 The code uses header-only open source libraries to maximize portability.
@@ -87,7 +118,7 @@ The code uses header-only open source libraries to maximize portability.
 
 ### R functions
 
-The file `src/ccmppR.cpp` contains R wrapper functions for the model simulation 
+The file `src/leapfrogR.cpp` contains R wrapper functions for the model simulation 
 via [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html) and 
 [RcppEigen](http://dirk.eddelbuettel.com/code/rcpp.eigen.html).
 
@@ -96,14 +127,11 @@ via [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html) and
 
 ### Simulation model
 
-* The CCMPP model is implemented as a sparse Leslie matrix formulation and using
-  direct calculation of the projection in arrays so that interim outputs (deaths,
-  births, migrations) are also saved. The array-based implementation appears to 
-  be faster.
-* Class structure for popualtion projection model needs review.
-* Specifying static dimensions for the state space may improve efficiency. This 
-  should be possible for common options (5x5 year, 1x1 year) through templating.
-* The model was implemented using _Eigen_ containers following the initial sparse
-  Leslie matrix specification. However, multi-dimensional arrays in the _boost_
-  library may be preferable. 
+* The model was implemented using _Eigen::Tensor_ containers. These were preferred
+  for several reasons:
+  
+  * Benchmarking found they were slighlty more efficient than _boost::multi_array_.
+  * Column-major indexing in the same order as R
+  * Other statistical packages (e.g. TMB, Stan) rely heavily on _Eigen_ so using
+    _Eigen_ containers slims the dependencies.
 

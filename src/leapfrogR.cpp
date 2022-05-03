@@ -6,7 +6,7 @@
 //'
 //' @param demp list of demographic input parameters (TODO: document)
 //' @param projp list of HIV projection parameters (TODO: document)
-//' @param hiv_strat_type stratification of HIV population, either "full"
+//' @param hiv_strat stratification of HIV population, either "full"
 //'   (default; single-year ages) or "coarse" (aggregated age groups). 
 //' @param hiv_steps_per_year number of Euler integration steps per year
 //'   for HIV progression; default 10.
@@ -21,7 +21,7 @@
 Rcpp::List
 leapfrogR(const Rcpp::List& demp,
 	  const Rcpp::List& projp,
-	  const Rcpp::String hiv_strat_type = "full",
+	  const Rcpp::String hiv_strat = "full",
 	  const int hiv_steps_per_year = 10) {
 
   using namespace Rcpp;
@@ -40,12 +40,12 @@ leapfrogR(const Rcpp::List& demp,
   const int hTS = 3;
 
   int hAG;
-  if (hiv_strat_type == "full") {
+  if (hiv_strat == "full") {
     hAG = hAG_FULL;
-  } else if (hiv_strat_type == "coarse") {
+  } else if (hiv_strat == "coarse") {
     hAG = hAG_COARSE;
   } else {
-    Rf_error("hiv_strat_type \"%s\" not found. Please select \"full\" or \"coarse\".\n", hiv_strat_type.get_cstring());
+    Rf_error("hiv_strat \"%s\" not found. Please select \"full\" or \"coarse\".\n", hiv_strat.get_cstring());
   }
     
   // allocate memory for return object

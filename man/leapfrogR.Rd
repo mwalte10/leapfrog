@@ -4,14 +4,14 @@
 \alias{leapfrogR}
 \title{Simulate leapfrog model}
 \usage{
-leapfrogR(demp, projp, hiv_strat_type = "full", hiv_steps_per_year = 10L)
+leapfrogR(demp, projp, hiv_strat = "full", hiv_steps_per_year = 10L)
 }
 \arguments{
 \item{demp}{list of demographic input parameters (TODO: document)}
 
 \item{projp}{list of HIV projection parameters (TODO: document)}
 
-\item{hiv_strat_type}{stratification of HIV population, either "full"
+\item{hiv_strat}{stratification of HIV population, either "full"
 (default; single-year ages) or "coarse" (aggregated age groups).}
 
 \item{hiv_steps_per_year}{number of Euler integration steps per year

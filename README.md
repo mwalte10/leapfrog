@@ -25,9 +25,12 @@ repository: <https://www.github.com/mrc-ide/ccmpp.tmb>*
 ## Simulation model
 
 The simulation model is implemented in a header-only C++ library located
-in [`inst/include/leapfrog.h`](inst/include/leapfrog.h). This location
-allows the C++ code to be imported in other R packages via specifying
-`LinkingTo: leapfrog` in the `DESCRIPTION` file.
+in [`inst/include/leapfrog-raw.h`](inst/include/leapfrog-raw.h). This
+location allows the C++ code to be imported in other R packages via
+specifying `LinkingTo: leapfrog` in the `DESCRIPTION` file.
+
+The simulation model is callable in R via a wrapper function
+`leafrogR()` created with [Rcpp](https://www.rcpp.org).
 
 ## Installation
 
@@ -41,88 +44,78 @@ devtools::install_github("mrc-ide/leapfrog")
 
 ## Example
 
-Construct a sparse Leslie matrix:
+The file `pjnz/bwa2021_v6.13.pjnz` contains an example Spectrum file
+constructed from default country data for Botswana in Spectrum v2.13
+(December 2021).
+
+Prepare model inputs.
 
 ``` r
 library(tidyverse)
 library(leapfrog)
-library(popReconstruct)
 
-data(burkina_faso_females)
+pjnz <- system.file("pjnz/bwa2021_v6.13.pjnz", package = "leapfrog")
 
-make_leslie_matrixR(sx = burkina.faso.females$survival.proportions[,1],
-                    fx = burkina.faso.females$fertility.rates[4:10, 1],
-                    srb = 1.05,
-                    age_span = 5,
-                    fx_idx = 4)
-#> 17 x 17 sparse Matrix of class "dgCMatrix"
-#>                                                                                                                                                  
-#>  [1,] .         .         0.2090608 0.5400452 0.6110685 0.5131988 0.3952854 0.2440665 0.1012326 0.01816255 .        .         .         .        
-#>  [2,] 0.8782273 .         .         .         .         .         .         .         .         .          .        .         .         .        
-#>  [3,] .         0.9713785 .         .         .         .         .         .         .         .          .        .         .         .        
-#>  [4,] .         .         0.9730318 .         .         .         .         .         .         .          .        .         .         .        
-#>  [5,] .         .         .         0.9577709 .         .         .         .         .         .          .        .         .         .        
-#>  [6,] .         .         .         .         0.9481755 .         .         .         .         .          .        .         .         .        
-#>  [7,] .         .         .         .         .         0.9460075 .         .         .         .          .        .         .         .        
-#>  [8,] .         .         .         .         .         .         0.9393766 .         .         .          .        .         .         .        
-#>  [9,] .         .         .         .         .         .         .         0.9258789 .         .          .        .         .         .        
-#> [10,] .         .         .         .         .         .         .         .         0.9052283 .          .        .         .         .        
-#> [11,] .         .         .         .         .         .         .         .         .         0.87537666 .        .         .         .        
-#> [12,] .         .         .         .         .         .         .         .         .         .          0.832338 .         .         .        
-#> [13,] .         .         .         .         .         .         .         .         .         .          .        0.7736165 .         .        
-#> [14,] .         .         .         .         .         .         .         .         .         .          .        .         0.6966118 .        
-#> [15,] .         .         .         .         .         .         .         .         .         .          .        .         .         0.5928803
-#> [16,] .         .         .         .         .         .         .         .         .         .          .        .         .         .        
-#> [17,] .         .         .         .         .         .         .         .         .         .          .        .         .         .        
-#>                                    
-#>  [1,] .         .         .        
-#>  [2,] .         .         .        
-#>  [3,] .         .         .        
-#>  [4,] .         .         .        
-#>  [5,] .         .         .        
-#>  [6,] .         .         .        
-#>  [7,] .         .         .        
-#>  [8,] .         .         .        
-#>  [9,] .         .         .        
-#> [10,] .         .         .        
-#> [11,] .         .         .        
-#> [12,] .         .         .        
-#> [13,] .         .         .        
-#> [14,] .         .         .        
-#> [15,] .         .         .        
-#> [16,] 0.4547571 .         .        
-#> [17,] .         0.3181678 0.2099861
+demp <- prepare_leapfrog_demp(pjnz)
+hivp <- prepare_leapfrog_projp(pjnz)
 ```
 
-Simulate a cohort component population projection:
+Simulate ‘full’ age group (single-year age) and ‘coarse’ age group
+(collapsed age groups) models.
 
 ``` r
-pop_proj <- ccmppR(basepop = as.numeric(burkina.faso.females$baseline.pop.counts),
-                   sx = burkina.faso.females$survival.proportions,
-                   fx = burkina.faso.females$fertility.rates[4:10, ],
-                   gx = burkina.faso.females$migration.proportions,
-                   srb = rep(1.05, ncol(burkina.faso.females$survival.proportions)),
-                   age_span = 5,
-                   fx_idx = 4)
-pop_proj$population[ , c(1, 2, 10)]
-#>         [,1]       [,2]       [,3]
-#>  [1,] 386000 496963.688 1369041.17
-#>  [2,] 292000 338995.727 1088715.23
-#>  [3,] 260000 283642.516  952860.73
-#>  [4,] 244000 246278.270  846073.20
-#>  [5,] 207000 221576.949  719894.38
-#>  [6,] 175000 186062.343  572001.86
-#>  [7,] 153000 156791.159  458905.67
-#>  [8,] 135000 136059.686  379925.83
-#>  [9,] 117000 118338.831  309642.33
-#> [10,]  98000 100304.139  208006.24
-#> [11,]  78000  81282.772  154298.67
-#> [12,]  60000  63137.000  114066.08
-#> [13,]  43000  46416.989   90879.78
-#> [14,]  29000  29954.307   65876.04
-#> [15,]  17000  17193.530   41985.79
-#> [16,]   8000   7730.870   22044.43
-#> [17,]   2000   2965.314   11332.85
+lsimF <- leapfrogR(demp, hivp, hiv_strat = "full")
+lsimC <- leapfrogR(demp, hivp, hiv_strat = "coarse")
+```
+
+Compare the HIV prevalence age 15-49 years and AIDS deaths 50+ years.
+Deaths 50+ years are to show some noticeable divergence between the
+`"full"` and `"coarse"` age group simulations.
+
+``` r
+prevF <- colSums(lsimF$hivpop1[16:50,,],,2) / colSums(lsimF$totpop1[16:50,,],,2)
+prevC <- colSums(lsimC$hivpop1[16:50,,],,2) / colSums(lsimC$totpop1[16:50,,],,2)
+
+deathsF <- colSums(lsimF$hivdeaths[51:81,,],,2)
+deathsC <- colSums(lsimC$hivdeaths[51:81,,],,2)
+
+plot(1970:2030, prevF, type = "l", main = "Prevalence 15-49")
+lines(1970:2030, prevC, col = 2)
+```
+
+<img src="man/figures/README-sim_prev-1.png" width="100%" />
+
+``` r
+plot(1970:2030, deathsF, type = "l", main = "AIDS Deaths 50+ years")
+lines(1970:2030, deathsC, col = 2)
+```
+
+<img src="man/figures/README-sim_prev-2.png" width="100%" />
+
+### Benchmarking
+
+*Note: The function `devtools::load_all()` invokes
+`pkgbuild::compile_dll()`, which executes with default arguemnt
+`debug = TRUE`. This compiles the package with `-O0` compiler
+optimisation flags. For benchmarking, make sure to install the package
+or compile the DLL with `pkgbuild::compile_dll(debug = FALSE)`.*
+
+``` r
+library(bench)
+library(eppasm)
+
+fp <- eppasm::prepare_directincid(pjnz)
+
+bench::mark(leapfrogR(demp, hivp, hiv_strat = "full"),
+            leapfrogR(demp, hivp, hiv_strat = "coarse"),
+            eppasm::simmod(fp),
+            check = FALSE)
+#> # A tibble: 3 × 6
+#>   expression                                       min   median `itr/sec` mem_alloc `gc/sec`
+#>   <bch:expr>                                  <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+#> 1 leapfrogR(demp, hivp, hiv_strat = "full")     8.96ms   9.39ms      105.    4.33MB     7.35
+#> 2 leapfrogR(demp, hivp, hiv_strat = "coarse")   1.61ms   1.73ms      566. 1006.65KB    12.1 
+#> 3 eppasm::simmod(fp)                            2.09ms   2.19ms      454.  939.42KB    11.7
 ```
 
 ## Code design
@@ -130,14 +123,14 @@ pop_proj$population[ , c(1, 2, 10)]
 ### Simulation model
 
 The simulation model is implemented as templated C++ code in
-`src/leapfrog.h`. This is the simulation model may be developed as a
-standalone C++ library that can be called by other software without
-requiring R-specific code features. The code uses header-only open
-source libraries to maximize portability.
+`inst/include/leapfrog-raw.h`. This is the simulation model may be
+developed as a standalone C++ library that can be called by other
+software without requiring R-specific code features. The code uses
+header-only open source libraries to maximize portability.
 
 ### R functions
 
-The file `src/ccmppR.cpp` contains R wrapper functions for the model
+The file `src/leapfrogR.cpp` contains R wrapper functions for the model
 simulation via [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html) and
 [RcppEigen](http://dirk.eddelbuettel.com/code/rcpp.eigen.html).
 
@@ -145,14 +138,11 @@ simulation via [Rcpp](http://dirk.eddelbuettel.com/code/rcpp.html) and
 
 ### Simulation model
 
--   The CCMPP model is implemented as a sparse Leslie matrix formulation
-    and using direct calculation of the projection in arrays so that
-    interim outputs (deaths, births, migrations) are also saved. The
-    array-based implementation appears to be faster.
--   Class structure for popualtion projection model needs review.
--   Specifying static dimensions for the state space may improve
-    efficiency. This should be possible for common options (5x5 year,
-    1x1 year) through templating.
--   The model was implemented using *Eigen* containers following the
-    initial sparse Leslie matrix specification. However,
-    multi-dimensional arrays in the *boost* library may be preferable.
+-   The model was implemented using *Eigen::Tensor* containers. These
+    were preferred for several reasons:
+
+    -   Benchmarking found they were slighlty more efficient than
+        *boost::multi_array*.
+    -   Column-major indexing in the same order as R
+    -   Other statistical packages (e.g. TMB, Stan) rely heavily on
+        *Eigen* so using *Eigen* containers slims the dependencies.

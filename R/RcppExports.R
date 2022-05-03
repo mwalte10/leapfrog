@@ -96,7 +96,7 @@ ccmpp_leslieR <- function(basepop, sx, fx, gx, srb, age_span, fx_idx) {
 #'
 #' @param demp list of demographic input parameters (TODO: document)
 #' @param projp list of HIV projection parameters (TODO: document)
-#' @param hiv_strat_type stratification of HIV population, either "full"
+#' @param hiv_strat stratification of HIV population, either "full"
 #'   (default; single-year ages) or "coarse" (aggregated age groups). 
 #' @param hiv_steps_per_year number of Euler integration steps per year
 #'   for HIV progression; default 10.
@@ -107,7 +107,7 @@ ccmpp_leslieR <- function(basepop, sx, fx, gx, srb, age_span, fx_idx) {
 #'
 #' @export
 #' 
-leapfrogR <- function(demp, projp, hiv_strat_type = "full", hiv_steps_per_year = 10L) {
-    .Call(`_leapfrog_leapfrogR`, demp, projp, hiv_strat_type, hiv_steps_per_year)
+leapfrogR <- function(demp, projp, hiv_strat = "full", hiv_steps_per_year = 10L) {
+    .Call(`_leapfrog_leapfrogR`, demp, projp, hiv_strat, hiv_steps_per_year)
 }
 

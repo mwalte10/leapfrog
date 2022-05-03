@@ -383,9 +383,10 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
 
             Type cd4mx_scale = 1.0;
             // !!NOTE: Mortality scaling not yet implemented
-            if (scale_cd4_mort & (t >= t_ART_start) &
+            if (scale_cd4_mort &
+		(t >= t_ART_start) &
                 (hm >= everARTelig_idx) &
-                hivstrat_adult(hm, ha, g, t) > 0.0) {
+                (hivstrat_adult(hm, ha, g, t) > 0.0)) {
               Type artpop_hahm = 0.0;
               for(int hu = 0; hu < hTS; hu++) {
                 artpop_hahm += artstrat_adult(hu, hm, ha, g, t);
