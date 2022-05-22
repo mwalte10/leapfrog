@@ -73,6 +73,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
                     Type *p_infections,
                     Type *p_hivstrat_adult,
                     Type *p_artstrat_adult,
+		    Type *p_births,
                     Type *p_natdeaths,
                     Type *p_natdeaths_hivpop,
                     Type *p_hivdeaths,
@@ -90,6 +91,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   typedef Eigen::TensorMap<Eigen::Tensor<const Type, 3>> TensorMapX3cT;
   typedef Eigen::TensorMap<Eigen::Tensor<const Type, 4>> TensorMapX4cT;
 
+  typedef Eigen::TensorMap<Eigen::Tensor<Type, 1>> TensorMapX1T;
   typedef Eigen::TensorMap<Eigen::Tensor<Type, 3>> TensorMapX3T;
   typedef Eigen::TensorMap<Eigen::Tensor<Type, 4>> TensorMapX4T;
   typedef Eigen::TensorMap<Eigen::Tensor<Type, 5>> TensorMapX5T;
@@ -140,6 +142,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   TensorMapX3T totpop1(p_totpop1, pAG, NG, sim_years);
   TensorMapX3T hivpop1(p_hivpop1, pAG, NG, sim_years);
   TensorMapX3T infections(p_infections, pAG, NG, sim_years);
+  TensorMapX1T births(p_births, sim_years);  
   TensorMapX3T natdeaths(p_natdeaths, pAG, NG, sim_years);
   TensorMapX3T natdeaths_hivpop(p_natdeaths_hivpop, pAG, NG, sim_years);
   TensorMapX3T hivdeaths(p_hivdeaths, pAG, NG, sim_years);
@@ -193,14 +196,16 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
 
     // fertility
 
-    Type births = 0.0;
+    births(t) = 0.0;
     for(int af = 0; af < pAG_FERT; af++) {
-      births += (totpop1(pIDX_FERT + af, FEMALE, t-1) + totpop1(pIDX_FERT + af, FEMALE, t)) * 0.5 * asfr(af, t);
+      births(t) += (totpop1(pIDX_FERT + af, FEMALE, t-1) + totpop1(pIDX_FERT + af, FEMALE, t)) * 0.5 * asfr(af, t);
     }
 
     // add births
     for(int g = 0; g < NG; g++) {
-      totpop1(0, g, t) = births * births_sex_prop(g, t) * sx(0, g, t);
+      Type births_sex = births(t) * births_sex_prop(g, t);
+      natdeaths(0, g, t) = births_sex * (1.0 - sx(0, g, t));
+      totpop1(0, g, t) =  births_sex * sx(0, g, t);
 
       // Assume 2/3 survival rate since mortality in first six months higher than
       // second 6 months (Spectrum manual, section 6.2.7.4)

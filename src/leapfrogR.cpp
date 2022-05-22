@@ -64,6 +64,8 @@ leapfrogR(const Rcpp::List& demp,
   NumericVector artstrat_adult(hTS * hDS * hAG * NG * proj_years);
   artstrat_adult.attr("dim") = NumericVector::create(hTS, hDS, hAG, NG, proj_years);
 
+  NumericVector births(proj_years);
+
   NumericVector natdeaths(pAG * NG * proj_years);
   natdeaths.attr("dim") = NumericVector::create(pAG, NG, proj_years);
 
@@ -114,6 +116,7 @@ leapfrogR(const Rcpp::List& demp,
        REAL(infections),
        REAL(hivstrat_adult),
        REAL(artstrat_adult),
+       REAL(births),
        REAL(natdeaths),
        REAL(natdeaths_hivpop),
        REAL(hivdeaths),
@@ -152,6 +155,7 @@ leapfrogR(const Rcpp::List& demp,
        REAL(infections),
        REAL(hivstrat_adult),
        REAL(artstrat_adult),
+       REAL(births),       
        REAL(natdeaths),
        REAL(natdeaths_hivpop),
        REAL(hivdeaths),
@@ -167,6 +171,7 @@ leapfrogR(const Rcpp::List& demp,
 			  _("hivstrat_adult") = hivstrat_adult,
 			  _("artstrat_adult") = artstrat_adult,
 			  _("infections") = infections,
+			  _("births") = births,			  
 			  _("natdeaths") = natdeaths,
 			  _("natdeaths_hivpop") = natdeaths_hivpop,
 			  _("hivdeaths") = hivdeaths,
