@@ -7,7 +7,7 @@
 
 [![R-CMD-check](https://github.com/mrc-ide/leapfrog/workflows/R-CMD-check/badge.svg)](https://github.com/mrc-ide/leapfrog/actions)
 [![Codecov test
-coverage](https://codecov.io/gh/mrc-ide/leapfrog/branch/master/graph/badge.svg)](https://codecov.io/gh/mrc-ide/leapfrog?branch=master)
+coverage](https://codecov.io/gh/mrc-ide/leapfrog/branch/demproj-only/graph/badge.svg)](https://codecov.io/gh/mrc-ide/leapfrog?branch=demproj-only)
 <!-- badges: end -->
 
 Leapfrog is a multistate population projection model for demographic and
@@ -22,6 +22,12 @@ Basia
 Reconstruction in TMB previously here have moved to a separate
 repository: <https://www.github.com/mrc-ide/ccmpp.tmb>*
 
+## Branch *demproj-only*
+
+The branch *demproj-only* contains code for only the demographic
+projection model as a simpler example for developing interfaces with
+fewer input and output arrays.
+
 ## Simulation model
 
 The simulation model is implemented in a header-only C++ library located
@@ -35,87 +41,66 @@ The simulation model is callable in R via a wrapper function
 ## Installation
 
 Install the development version from
-[GitHub](https://github.com/mrc-ide/leapfrog) via devtools:
+[GitHub](https://github.com/mrc-ide/leapfrog/tree/demproj-only) via
+devtools:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("mrc-ide/leapfrog")
+devtools::install_github("mrc-ide/leapfrog@demproj-only")
 ```
 
 ## Example
 
-The file `pjnz/bwa2021_v6.13.pjnz` contains an example Spectrum file
-constructed from default country data for Botswana in Spectrum v2.13
-(December 2021).
+The file `bwa_demproj-only_spectrum-v6.13_2022-02-12.PJNZ` contains an
+example Spectrum file constructed from default country data for Botswana
+in Spectrum v2.13 (December 2021) with *only DemProj* activated.
 
 Prepare model inputs.
 
 ``` r
 library(leapfrog)
+pkgbuild::compile_dll(".", debug = FALSE)
+devtools::load_all(".")
+#> ℹ Loading leapfrog
 
-pjnz <- system.file("pjnz/bwa2021_v6.13.pjnz", package = "leapfrog")
+pjnz <- "tests/testdata/spectrum/v6.13/bwa_demproj-only_spectrum-v6.13_2022-02-12.PJNZ"
 
 demp <- prepare_leapfrog_demp(pjnz)
-hivp <- prepare_leapfrog_projp(pjnz)
 ```
 
 Simulate ‘full’ age group (single-year age) and ‘coarse’ age group
 (collapsed age groups) models.
 
 ``` r
-lsimF <- leapfrogR(demp, hivp, hiv_strat = "full")
-lsimC <- leapfrogR(demp, hivp, hiv_strat = "coarse")
+lsim <- leapfrogR(demp)
 ```
 
-Compare the HIV prevalence age 15-49 years and AIDS deaths 50+ years.
-Deaths 50+ years are to show some noticeable divergence between the
-`"full"` and `"coarse"` age group simulations.
+Compare population, deaths, and births to Spectrum outputs. The
+*leapfrog* model does not produce birth or death outputs for the
+baseline year.
 
 ``` r
-prevF <- colSums(lsimF$hivpop1[16:50,,],,2) / colSums(lsimF$totpop1[16:50,,],,2)
-prevC <- colSums(lsimC$hivpop1[16:50,,],,2) / colSums(lsimC$totpop1[16:50,,],,2)
+specres <- eppasm::read_hivproj_output(pjnz)
 
-deathsF <- colSums(lsimF$hivdeaths[51:81,,],,2)
-deathsC <- colSums(lsimC$hivdeaths[51:81,,],,2)
-
-plot(1970:2030, prevF, type = "l", main = "Prevalence 15-49")
-lines(1970:2030, prevC, col = 2)
+plot(1970:2030, colSums(lsim$totpop1,,2), type = "l", main = "Total population")
+lines(1970:2030, colSums(specres$totpop,,2), col = 2)
 ```
 
-<img src="man/figures/README-sim_prev-1.png" width="100%" />
+<img src="man/figures/README-demproj_outputs-1.png" width="100%" />
 
 ``` r
-plot(1970:2030, deathsF, type = "l", main = "AIDS Deaths 50+ years")
-lines(1970:2030, deathsC, col = 2)
+plot(1970:2030, colSums(lsim$natdeaths,,2), type = "l", main = "Total non-AIDS deaths")
+lines(1970:2030, colSums(specres$natdeaths,,2), col = 2)
 ```
 
-<img src="man/figures/README-sim_prev-2.png" width="100%" />
-
-### Benchmarking
-
-*Note: The function `devtools::load_all()` invokes
-`pkgbuild::compile_dll()`, which executes with default arguemnt
-`debug = TRUE`. This compiles the package with `-O0` compiler
-optimisation flags. For benchmarking, make sure to install the package
-or compile the DLL with `pkgbuild::compile_dll(debug = FALSE)`.*
+<img src="man/figures/README-demproj_outputs-2.png" width="100%" />
 
 ``` r
-library(bench)
-library(eppasm)
-
-fp <- eppasm::prepare_directincid(pjnz)
-
-bench::mark(leapfrogR(demp, hivp, hiv_strat = "full"),
-            leapfrogR(demp, hivp, hiv_strat = "coarse"),
-            eppasm::simmod(fp),
-            check = FALSE)
-#> # A tibble: 3 × 6
-#>   expression                                       min   median `itr/sec` mem_alloc `gc/sec`
-#>   <bch:expr>                                  <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 leapfrogR(demp, hivp, hiv_strat = "full")     4.34ms   5.01ms      194.    4.33MB     45.2
-#> 2 leapfrogR(demp, hivp, hiv_strat = "coarse")  761.4µs 967.22µs      971. 1006.65KB     34.8
-#> 3 eppasm::simmod(fp)                            1.01ms   1.29ms      741.    1.43MB     32.8
+plot(1970:2030, lsim$births, type = "l", main = "Births")
+lines(1970:2030, specres$births, col = 2)
 ```
+
+<img src="man/figures/README-demproj_outputs-3.png" width="100%" />
 
 ## Code design
 
