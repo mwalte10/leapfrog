@@ -10,11 +10,15 @@ test_that("DemProj only matches EPP-ASM", {
   expect_warning(fp <- eppasm::prepare_directincid(pjnz1),
                  "no non-missing arguments to min; returning Inf")
   fp$tARTstart <- 61L
-  mod <- eppasm::simmod(fp)
 
   demp <- prepare_leapfrog_demp(pjnz1)
   hivp <- prepare_leapfrog_projp(pjnz1)
   lmod <- leapfrogR(demp, hivp)
+
+  ## Replace ASFR because demp$asfr is normalised, but fp$asfr is not
+  fp$asfr <- demp$asfr  ## re
+  mod <- eppasm::simmod(fp)
+
 
   expect_equal(lmod$totpop1[16:80,,], mod[1:65,,1,])
 })
