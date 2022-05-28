@@ -30,18 +30,13 @@ test_that("Leapfrog matches DemProj projection without migration", {
 
   specres <- eppasm::read_hivproj_output(pjnz1)
 
-  ## For age 0, there is a difference with Spectrum; unsure why
-  diff[1,]
-
-  expect_true(all(abs(diff[-1,]) < 0.001))
+  expect_true(all(abs(diff < 0.001)))
 
   ## deaths by sex/age
   expect_true(all(abs(lmod1$natdeaths[,,-1] - specres$natdeaths[,,-1]) < 0.003))
 
   ## births by age
-  ## !!! QUITE LENIENT THRESHOLD
-  ## TO DO: review births calculation wiht Avenir
-  expect_true(all(abs(lmod1$births[-1] - specres$births[-1]) < 0.2))
+  expect_true(all(abs(lmod1$births[-1] - specres$births[-1]) < 0.002))
   
 })
 

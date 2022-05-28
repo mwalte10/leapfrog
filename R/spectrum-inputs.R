@@ -52,6 +52,9 @@ prepare_leapfrog_demp <- function(pjnz) {
 
   demp$births_sex_prop <- rbind(male = demp$srb, female = 100) / (demp$srb + 100)
 
+  ## normalise ASFR distribution
+  demp$asfr <- sweep(demp$asfr, 2, demp$tfr / colSums(demp$asfr), "*")
+
   demp
 }
 
