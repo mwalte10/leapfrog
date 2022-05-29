@@ -14,14 +14,12 @@ read_sx <- function(pjnz, use_ep5=FALSE){
     dp[which(dp[,tagcol]==tag)+rows, cols]
   }
 
-  version <- paste("Spectrum", dp[which(dp[,1] == "<ValidVers MV>")+2, 4])
-
   ## projection parameters
   yr_start <- as.integer(dpsub("<FirstYear MV2>",2,4))
   yr_end <- as.integer(dpsub("<FinalYear MV2>",2,4))
   proj.years <- yr_start:yr_end
   timedat.idx <- 4+1:length(proj.years)-1
-  
+
   ## mx
   Sx <- dpsub("<SurvRate MV2>", 3+c(0:81, 82+0:81), timedat.idx)
   Sx <- array(as.numeric(unlist(Sx)), c(82, 2, length(proj.years)))
@@ -30,25 +28,92 @@ read_sx <- function(pjnz, use_ep5=FALSE){
   Sx
 }
 
+read_netmigr <- function(pjnz, use_ep5=FALSE, adjust_u5mig = TRUE, sx = NULL){
+
+  if(use_ep5) {
+    dpfile <- grep(".ep5$", utils::unzip(pjnz, list=TRUE)$Name, value=TRUE)
+  } else {
+    dpfile <- grep(".DP$", utils::unzip(pjnz, list=TRUE)$Name, value=TRUE)
+  }
+
+  dp <- utils::read.csv(unz(pjnz, dpfile), as.is=TRUE)
+
+  exists_dptag <- function(tag, tagcol=1){tag %in% dp[,tagcol]}
+  dpsub <- function(tag, rows, cols, tagcol=1){
+    dp[which(dp[,tagcol]==tag)+rows, cols]
+  }
+
+  ## projection parameters
+  yr_start <- as.integer(dpsub("<FirstYear MV2>",2,4))
+  yr_end <- as.integer(dpsub("<FinalYear MV2>",2,4))
+  proj.years <- yr_start:yr_end
+  timedat.idx <- 4+1:length(proj.years)-1
+
+  ## netmig
+  totnetmig <- sapply(dpsub("<MigrRate MV2>", c(4, 6), timedat.idx), as.numeric)
+
+  netmigagedist <- sapply(dpsub("<MigrAgeDist MV2>", 2 + 1:34, timedat.idx), as.numeric)/100
+  netmigagedist <- array(c(netmigagedist), c(17, 2, length(proj.years)))
+  netmigr5 <- sweep(netmigagedist, 2:3, totnetmig, "*")
+
+  netmigr <- array(dim = c(81, 2, length(proj.years)),
+                   dimnames = list(age = 0:80, sex = c("male", "female"), year = proj.years))
+  netmigr[1:80, , ] <- apply(netmigr5[1:16,,], 2:3, beers::beers_sub_ordinary)
+  netmigr[81, , ] <- netmigr5[17, , ]
+
+  if (adjust_u5mig) {
+
+    if (is.null(sx)) {
+      sx <- read_sx(pjnz)
+    }
+    
+    u5prop <- array(dim = c(5, 2))
+    u5prop[1, ] <- sx[1, , 1] * 2
+    u5prop[2, ] <- sx[2, , 1] * u5prop[1, ]
+    u5prop[3, ] <- sx[3, , 1] * u5prop[2, ]
+    u5prop[4, ] <- sx[4, , 1] * u5prop[3, ]
+    u5prop[5, ] <- sx[5, , 1] * u5prop[4, ]
+    
+    u5prop <- sweep(u5prop, 2, colSums(u5prop), "/")
+    
+    netmigr[1:5 , 1, ] <- u5prop[ , 1, drop = FALSE] %*% netmigr5[1, 1, ]
+    netmigr[1:5 , 2, ] <- u5prop[ , 2, drop = FALSE] %*% netmigr5[1, 2, ]
+  }
+  
+  netmigr
+}
+
+adjust_spectrum_netmigr <- function(netmigr) {
+
+  ## Spectrum adjusts net-migration to occur half in
+  ## current age group and half in next age group
+  
+  netmigr_adj <- netmigr
+  netmigr_adj[-1,,] <- (netmigr[-1,,] + netmigr[-81,,])/2
+  netmigr_adj[1,,] <- netmigr[1,,]/2
+  netmigr_adj[81,,] <- netmigr_adj[81,,] + netmigr[81,,]/2
+
+  netmigr_adj
+}
+
+
 #' Prepare demographic inputs from Spectrum PJNZ
 #'
 #' @param pjnz path to PJNZ file
 #'
 #' @return list of demographic input parameters
-#' 
+#'
+#' @examples
+#' pjnz <- system.file("pjnz/bwa2021_v6.13.pjnz", package = "leapfrog")
+#' demp <- prepare_leapfrog_demp(pjnz)
+#'
 #' @export
 prepare_leapfrog_demp <- function(pjnz) {
 
   demp <- eppasm::read_specdp_demog_param(pjnz)
   demp$Sx <- read_sx(pjnz)
-
-  ## Spectrum adjusts net-migration to occur half in
-  ## current age group and half in next age group
-  
-  demp$netmigr_adj <- demp$netmigr
-  demp$netmigr_adj[-1,,] <- (demp$netmigr[-1,,] + demp$netmigr[-81,,])/2
-  demp$netmigr_adj[1,,] <- demp$netmigr[1,,]/2
-  demp$netmigr_adj[81,,] <- demp$netmigr_adj[81,,] + demp$netmigr[81,,]/2
+  demp$netmigr <- read_netmigr(pjnz, sx = demp$Sx)
+  demp$netmigr_adj <- adjust_spectrum_netmigr(demp$netmigr)
 
   demp$births_sex_prop <- rbind(male = demp$srb, female = 100) / (demp$srb + 100)
 
@@ -67,6 +132,10 @@ prepare_leapfrog_demp <- function(pjnz) {
 #'
 #' @return list of HIV projection parameters
 #'
+#' @examples
+#' pjnz <- system.file("pjnz/bwa2021_v6.13.pjnz", package = "leapfrog")
+#' projp <- prepare_leapfrog_projp(pjnz)
+#'
 #' @export
 prepare_leapfrog_projp <- function(pjnz, hiv_steps_per_year = 10L, hTS = 3) {
 
@@ -80,14 +149,14 @@ prepare_leapfrog_projp <- function(pjnz, hiv_steps_per_year = 10L, hTS = 3) {
 
   v <- list()
   v$incidinput <- eppasm::read_incid_input(pjnz)
-  v$incidpopage <- attr(v$incidinput, "incidpopage")    
+  v$incidpopage <- attr(v$incidinput, "incidpopage")
   v$incrr_sex <- projp$incrr_sex
-  
+
   ## Use Beer's coefficients to distribution IRRs by age/sex
   Amat <- eppasm:::create_beers(17)
   v$incrr_age <- apply(projp$incrr_age, 2:3, function(x)  Amat %*% x)[16:81, , ] ## !! Hard coded
   v$incrr_age[v$incrr_age < 0] <- 0
-  
+
   v$cd4_initdist_full <- projp$cd4_initdist[ , idx_expand_full, ]
   v$cd4_prog_full <- (1-exp(-projp$cd4_prog[ , idx_expand_full, ] / hiv_steps_per_year)) * hiv_steps_per_year
   v$cd4_mort_full <- projp$cd4_mort[ ,idx_expand_full, ]
@@ -97,7 +166,7 @@ prepare_leapfrog_projp <- function(pjnz, hiv_steps_per_year = 10L, hTS = 3) {
   v$cd4_prog_coarse <- (1-exp(-projp$cd4_prog[ , idx_expand_coarse, ] / hiv_steps_per_year)) * hiv_steps_per_year
   v$cd4_mort_coarse <- projp$cd4_mort[ ,idx_expand_coarse, ]
   v$art_mort_coarse <- projp$art_mort[c(1, 2, rep(3, hTS - 2)), , idx_expand_coarse, ]
-  
+
   v$artmx_timerr <- projp$artmx_timerr[c(1, 2, rep(3, hTS - 2)), ]
 
   ## ## ART eligibility and numbers on treatment
@@ -108,9 +177,9 @@ prepare_leapfrog_projp <- function(pjnz, hiv_steps_per_year = 10L, hTS = 3) {
   ## convert percentage to proportion
   v$art15plus_num[v$art15plus_isperc] <- v$art15plus_num[v$art15plus_isperc] / 100
 
-  
+
   ## eligibility starts in projection year idx
-  ## ## !! NOTE: from EPP-ASM; not yet implemented  
+  ## ## !! NOTE: from EPP-ASM; not yet implemented
   ## v$specpop_percelig <- rowSums(with(projp$artelig_specpop[-1,], mapply(function(elig, percent, year) rep(c(0, percent*as.numeric(elig)), c(year - proj_start, proj_end - year + 1)), elig, percent, year)))
   v$artcd4elig_idx <- findInterval(-projp$art15plus_eligthres, -c(999, 500, 350, 250, 200, 100, 50))
 

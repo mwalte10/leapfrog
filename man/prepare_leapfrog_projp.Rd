@@ -20,3 +20,8 @@ list of HIV projection parameters
 \description{
 Prepare adult HIV projection parameters from Spectrum PJNZ
 }
+\examples{
+pjnz <- system.file("pjnz/bwa2021_v6.13.pjnz", package = "leapfrog")
+projp <- prepare_leapfrog_projp(pjnz)
+
+}

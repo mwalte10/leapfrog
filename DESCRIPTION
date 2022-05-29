@@ -16,6 +16,7 @@ LinkingTo:
     Rcpp,
     RcppEigen
 Imports:
+    beers,
     eppasm (>= 0.5.12),
     methods,
     Matrix,
@@ -25,4 +26,5 @@ Suggests:
     covr,
     testthat (>= 2.1.0)
 Remotes:
+    mrc-ide/beers,
     mrc-ide/eppasm

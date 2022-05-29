@@ -15,3 +15,8 @@ list of demographic input parameters
 \description{
 Prepare demographic inputs from Spectrum PJNZ
 }
+\examples{
+pjnz <- system.file("pjnz/bwa2021_v6.13.pjnz", package = "leapfrog")
+demp <- prepare_leapfrog_demp(pjnz)
+
+}
