@@ -59,9 +59,5 @@ test_that("Leapfrog matches DemProj projection with migration", {
 
   diff <- lmod1$totpop1[,,2:6] - demp1$basepop[,,2:6]
 
-  ## Age 80+ group also slightly larger diff now
-  lmod1$totpop1[-81,,] - demp1$basepop[-81,,]
-
-  expect_true(all(abs(diff[-81,,]) < 0.01))
-  expect_true(all(abs(diff[81,,]) < 0.5))
+  expect_true(all(abs(diff) < 0.01))
 })

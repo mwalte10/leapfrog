@@ -188,10 +188,21 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
       totpop1(pAG-1, g, t) += totpop1(pAG-1, g, t-1) - natdeaths_open_age;
 
       // net migration
-      for(int a = 1; a < pAG; a++) {
+      for(int a = 1; a < pAG - 1; a++) {
+	// Number of net migrants adjusted for survivorship to end of period (qx / 2)
         migrate_ag(a, g) = netmigr(a, g, t) * (1.0 + sx(a, g, t)) * 0.5 / totpop1(a, g, t);
         totpop1(a, g, t) *= 1.0 + migrate_ag(a, g);
       }
+
+      // For open age group, netmigrant survivor adjustment based on weighted
+      // sx for age 79 and age 80+.
+      // * Numerator: totpop1(a, g, t-1) * (1.0 + sx(a+1, g, t)) + totpop1(a-1, g, t-1) * (1.0 + sx(a, g, t))
+      // * Denominator: totpop1(a, g, t-1) + totpop1(a-1, g, t-1)
+      // Re-expressed current population and deaths to open age group (already calculated):
+      int a = pAG - 1;
+      Type sx_netmig = (totpop1(a, g,t) + 0.5 * natdeaths(pAG-1, g, t)) / (totpop1(a, g,t) + natdeaths(pAG-1, g, t));
+      migrate_ag(a, g) = sx_netmig * netmigr(a, g, t) / totpop1(a, g,t);
+      totpop1(a, g, t) *= 1.0 + migrate_ag(a, g);
     }
 
     // fertility
