@@ -1,0 +1,35 @@
+Package: leapfrog
+Title: Multistate Population Projection Model for Demographic and HIV
+        Estimation
+Version: 0.0.1
+Authors@R: 
+    person(given = "Jeffrey",
+           family = "Eaton",
+           role = c("aut", "cre"),
+           email = "jeffrey.eaton@imperial.ac.uk",
+           comment = c(ORCID = "0000-0001-7728-728X"))
+Description: Leapfrog is a multistate population projection model for estimating population, demographic indicators, and HIV epidemic. The model combines a standard cohort component model of population projection (CCMPP) with a multistate model for HIV infection, disease progression, and treatment. Statistical tools are implemented for joint inference from multiple demographic and epidemiologic data sources.
+License: MIT + file LICENSE
+Encoding: UTF-8
+RoxygenNote: 7.1.2
+LinkingTo: Rcpp, RcppEigen
+Imports: beers, eppasm (>= 0.5.12), methods, Matrix, Rcpp
+Suggests: bench, covr, testthat (>= 2.1.0)
+Remotes: mrc-ide/beers, mrc-ide/eppasm
+RemoteType: github
+RemoteHost: api.github.com
+RemoteRepo: leapfrog
+RemoteUsername: mrc-ide
+RemoteRef: HEAD
+RemoteSha: 0c985624f87ee9f3691b2354398b6e8f85d621a2
+GithubRepo: leapfrog
+GithubUsername: mrc-ide
+GithubRef: HEAD
+GithubSHA1: 0c985624f87ee9f3691b2354398b6e8f85d621a2
+NeedsCompilation: yes
+Packaged: 2022-06-24 08:46:12 UTC; mwalters
+Author: Jeffrey Eaton [aut, cre] (<https://orcid.org/0000-0001-7728-728X>)
+Maintainer: Jeffrey Eaton <jeffrey.eaton@imperial.ac.uk>
+Built: R 4.2.0; x86_64-w64-mingw32; 2022-06-24 08:46:14 UTC; windows
+ExperimentalWindowsRuntime: ucrt
+Archs: x64
