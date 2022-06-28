@@ -85,57 +85,85 @@ test_that("Leapfrog matches direct incidence option in EPP-ASM, no ART", {
   fp$asfr <- demp$asfr
 
   mod <- eppasm::simmod(fp)
+  
+  ##EPPASM and leapfrog are done at different age specifications
+  age_mapping <- data.frame(eppasm_age = c(rep(1,2), rep(2,2), unlist(lapply(c(3:8), rep, times = 5)), rep(9, 32)), leapfrog_age = 1:66)
 
   ## PREVALENCE
-  ## mod is at 5 year age intervals so lets just collapse all to 15+
-  ## Unsure what the age groups are here actually, this is what it seems:
-  ## mod: 1-2 = lmod: 16:20 and then 5 year increments after?
   mod_prev <- attr(mod, 'hivpop')
-  mod_prev <- melt(mod_prev)
-  mod_prev <- data.table(mod_prev)
-  mod_prev <- mod_prev[,.(value = sum(value)), by = c('Var3', 'Var4')]
+  dimnames(mod_prev) <- list('CD4' = c(1:7), 'eppasm_age' = c(1:9), 'sex' = c(1:2), 'year' = c(1:61))
+  mod_prev <- mod_prev %>%
+    cubelyr::as.tbl_cube(met_name = "EPPASM") %>%
+    as_tibble %>%
+    group_by(year, eppasm_age, CD4) %>% 
+    summarise(across(`EPPASM`, sum))  
+  
+  lmod_prev <- lmod$hivstrat_adult
+  dimnames(lmod_prev) <- list('CD4' = c(1:7), 'leapfrog_age' = c(1:66), 'sex' = c(1:2), 'year' = c(1:61))
+  lmod_prev <- lmod_prev %>%
+    cubelyr::as.tbl_cube(met_name = "leapfrog") %>%
+    as_tibble
+  lmod_prev <- left_join(lmod_prev, age_mapping, by = 'leapfrog_age')
+  lmod_prev <- lmod_prev %>%
+    group_by(year, eppasm_age, CD4) %>% 
+    summarise(across(`leapfrog`, sum))  
+  
+  prev_comparison <- full_join(lmod_prev, mod_prev)  %>% 
+    group_by(year, eppasm_age, CD4) %>% 
+    mutate(pct_diff = abs(EPPASM - leapfrog)  / leapfrog, leapfrog = leapfrog, EPPASM = EPPASM) %>%
+    mutate(pct_diff = ifelse(is.nan(pct_diff), 0, pct_diff), leapfrog = leapfrog, EPPASM = EPPASM)
 
-  lmod_prev <- lmod$hivpop1
-  lmod_prev <- melt(lmod_prev)
-  lmod_prev <- data.table(lmod_prev)
-  lmod_prev <- lmod_prev[Var1 %in% c(16:80)]
-  lmod_prev <- lmod_prev[,.(value = sum(value)), by = c('Var2', 'Var3')]
-  setnames(mod_prev, c('Var3', 'Var4', 'value'), c('sex', 'year', 'eppasm'))
-  setnames(lmod_prev, c('Var2', 'Var3', 'value'), c('sex', 'year', 'leapfrog'))
-  prev_comparison <- merge(mod_prev, lmod_prev, by = c('sex', 'year'))
-  prev_comparison[,pct_diff := abs((eppasm - leapfrog) / leapfrog)]
-  prev_comparison[eppasm == 0, pct_diff := 0]
-
-  ##right now lets set the percent difference as less than 5%
-  expect_true(all(prev_comparison$pct_diff < 0.05))
+  ##percent difference as less than 1%, this is failing rn bc
+  ##the transmission model hasn't been fully implemented
+  ##write.csv(prev_comparison, "./tests/testdata/plotting_diagnostics/prev_comparison.csv", row.names = F)
+  expect_true(all(abs(prev_comparison$pct_diff) < 0.01))
 
   ##INCIDENCE
   mod_inc <- attr(mod, 'infections')
   mod_inc <- mod_inc[-66,,]
-  mod_inc <- data.table(melt(mod_inc))
+  dimnames(mod_inc) <- list(age = c(1:65), sex = c(1,2), year = c(1:61))
+  mod_inc <- mod_inc %>%
+    cubelyr::as.tbl_cube(met_name = "EPPASM") %>%
+    as_tibble 
+  
   lmod_inc <- lmod$infections
   lmod_inc <- lmod_inc[16:80,,]
-  lmod_inc <- data.table(melt(lmod_inc))
-  inc_comparison <- merge(mod_inc, lmod_inc, all.x = T, by = c('Var1', 'Var2', 'Var3'))
-  inc_comparison[,diff := abs((value.x - value.y) / value.x)]
-  inc_comparison[value.x == 0, diff := 0]
-  ## super small differences so can't do this, will just do pct diff less than 1%
-  ##expect_equal(lmod_inc[16:80,,], mod_inc[1:65,,])
-  expect_true(all(inc_comparison$diff < 1e-2))
-
+  dimnames(lmod_inc) <- list(age = c(1:65), sex = c(1,2), year = c(1:61))
+  lmod_inc <- lmod_inc %>%
+    cubelyr::as.tbl_cube(met_name = "leapfrog") %>%
+    as_tibble 
+  inc_comparison <- full_join(lmod_inc, mod_inc)  %>% 
+    group_by(age, sex, year) %>% 
+    mutate(pct_diff = abs(EPPASM - leapfrog)  / leapfrog, leapfrog = leapfrog, EPPASM = EPPASM) %>%
+    mutate(pct_diff = ifelse(is.nan(pct_diff), 0, pct_diff), leapfrog = leapfrog, EPPASM = EPPASM)
+  
+  ##assumed less than 1% difference
+  expect_true(all(abs(inc_comparison$pct_diff) < 0.01))
+  
   ##HIV DEATHS
   mod_deaths <- attr(mod, 'hivdeaths')
-  lmod_deaths <- lmod$hivdeaths
   mod_deaths <- mod_deaths[-66,,]
-  mod_deaths <- data.table(melt(mod_deaths))
-  lmod_deaths <- lmod$infections
+  dimnames(mod_deaths) <- list(age = c(1:65), sex = c(1,2), year = c(1:61))
+  mod_deaths <- mod_deaths %>%
+    cubelyr::as.tbl_cube(met_name = "EPPASM") %>%
+    as_tibble 
+  
+  lmod_deaths <- lmod$hivdeaths
   lmod_deaths <- lmod_deaths[16:80,,]
-  lmod_deaths <- data.table(melt(lmod_deaths))
-  deaths_comparison <- merge(mod_deaths, lmod_deaths, all.x = T, by = c('Var1', 'Var2', 'Var3'))
-  deaths_comparison[,diff := abs((value.x - value.y) / value.x)]
-  deaths_comparison[value.x == 0, diff := 0]
-  ##looks like deaths are fairly different, this is what is driving difference in prevalence above
+  dimnames(lmod_deaths) <- list(age = c(1:65), sex = c(1,2), year = c(1:61))
+  lmod_deaths <- lmod_deaths %>%
+    cubelyr::as.tbl_cube(met_name = "leapfrog") %>%
+    as_tibble 
+  deaths_comparison <- full_join(lmod_deaths, mod_deaths)  %>% 
+    group_by(age, sex, year) %>% 
+    mutate(pct_diff = abs(EPPASM - leapfrog)  / leapfrog, leapfrog = leapfrog, EPPASM = EPPASM) %>%
+    mutate(pct_diff = ifelse(is.nan(pct_diff), 0, pct_diff), leapfrog = leapfrog, EPPASM = EPPASM)
 
+  ##percent difference as less than 1%, this is failing rn bc
+  ##the transmission model hasn't been fully implemented
+  ##write.csv(deaths_comparison, "./tests/testdata/plotting_diagnostics/deaths_comparison.csv", row.names = F)
+  expect_true(all(abs(deaths_comparison$pct_diff) < 0.01))
+  
 
 })
 
