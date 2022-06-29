@@ -151,6 +151,9 @@ prepare_leapfrog_projp <- function(pjnz, hiv_steps_per_year = 10L, hTS = 3) {
   v$incidinput <- eppasm::read_incid_input(pjnz)
   v$incidpopage <- attr(v$incidinput, "incidpopage")
   v$incrr_sex <- projp$incrr_sex
+  
+  ## HIV positive entrants, right now just doing those without ART
+  v$age15hivpop <- projp$age15hivpop
 
   ## Use Beer's coefficients to distribution IRRs by age/sex
   Amat <- eppasm:::create_beers(17)

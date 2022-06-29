@@ -60,6 +60,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
                     const Type art_alloc_mxweight,
                     const int scale_cd4_mort,
                     const Type *p_art_dropout,
+                    const Type *p_age15hivpop,
                     //
                     //settings
                     const int sim_years,
@@ -73,7 +74,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
                     Type *p_infections,
                     Type *p_hivstrat_adult,
                     Type *p_artstrat_adult,
-		    Type *p_births,
+		                Type *p_births,
                     Type *p_natdeaths,
                     Type *p_natdeaths_hivpop,
                     Type *p_hivdeaths,
@@ -111,6 +112,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   // // inputs
 
   // state space dimensions
+  
 
   double dt = 1.0 / hiv_steps_per_year;
 
@@ -137,6 +139,8 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   const TensorMapX2cT art15plus_num(p_art15plus_num, NG, sim_years);
   const TensorMapX2cI art15plus_isperc(p_art15plus_isperc, NG, sim_years);
   const TensorMapX1cT art_dropout(p_art_dropout, sim_years);
+  const TensorMapX4cT age15hivpop(p_age15hivpop, 4, hDS, NG, sim_years);
+
 
   // outputs
   TensorMapX3T totpop1(p_totpop1, pAG, NG, sim_years);
@@ -269,9 +273,13 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
     }
 
     // !!!TODO: add HIV+ 15 year old entrants
+    //mkw: through both sexes
     for (int g = 0; g < NG; g++) {
+      //mkw: through CD4 categories 
       for (int hm = 0; hm < hDS; hm++) {
         hivstrat_adult(hm, 0, g, t) = (1.0 - hiv_ag_prob(0, g)) * hivstrat_adult(hm, 0, g, t-1);
+       //mkw TODO: not including any on art here
+        hivstrat_adult(hm, 0, g, t) = hivstrat_adult(hm, 0, g, t) + age15hivpop(1, hm, g, t);
         // ADD HIV+ entrants here
         if(t > t_ART_start) {
           for(int hu = 0; hu < hTS; hu++) {
