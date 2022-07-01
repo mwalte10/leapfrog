@@ -20,7 +20,9 @@ Imports:
     eppasm (>= 0.5.12),
     methods,
     Matrix,
-    Rcpp
+    Rcpp,
+    dplyr,
+    cubelyr
 Suggests:
     bench,
     covr,
