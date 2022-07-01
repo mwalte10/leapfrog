@@ -19,8 +19,6 @@ Imports:
     beers,
     methods,
     Matrix,
-    dplyr,
-    cubelyr,
     Rcpp
 Suggests:
     bench,
