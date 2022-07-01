@@ -17,7 +17,6 @@ LinkingTo:
     RcppEigen
 Imports:
     beers,
-    eppasm (>= 0.5.12),
     methods,
     Matrix,
     dplyr,
