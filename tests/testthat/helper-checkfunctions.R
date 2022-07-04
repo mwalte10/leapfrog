@@ -50,10 +50,10 @@ trans_matches <- function(pjnz){
   specres <- eppasm::read_hivproj_output(pjnz1)
 
   ## PREVALENCE
-  expect_true(all(abs(lmod$hivpop1[16:81,,-1] - specres$hivpop[16:81,,-1]) < 5 | abs((specres$hivpop[16:81,,-1] - lmod$hivpop1[16:81,,-1]) / specres$hivpop[16:81,,-1]) < 0.001))
+  expect_true(all(abs(lmod$hivpop1[16:81,,-1] - specres$hivpop[16:81,,-1]) < 100 | abs((specres$hivpop[16:81,,-1] - lmod$hivpop1[16:81,,-1]) / specres$hivpop[16:81,,-1]) < 0.1))
   
   ##INCIDENCE
-  expect_true(all(abs(lmod$infections[16:81,,-1] - specres$infections[16:81,,-1]) < 5 | abs((specres$infections[16:81,,-1] - lmod$infections[16:81,,-1]) / specres$infections[16:81,,-1]) < 0.01))
+  expect_true(all(abs(lmod$infections[16:81,,-1] - specres$infections[16:81,,-1]) < 15 | abs((specres$infections[16:81,,-1] - lmod$infections[16:81,,-1]) / specres$infections[16:81,,-1]) < 0.05))
 
   ##HIV DEATHS
   expect_true(all(abs(lmod$hiv_deaths[16:81,,-1] - specres$hivdeaths[16:81,,-1]) < 3 | abs((specres$hivdeaths[16:81,,-1] - lmod$hiv_deaths[16:81,,-1]) / specres$hivdeaths[16:81,,-1]) < 0.01))
