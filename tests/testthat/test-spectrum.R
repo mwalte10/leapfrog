@@ -36,11 +36,19 @@ test_that("Leapfrog matches DemProj projection without migration", {
   
 })
 
-
-test_that("Leapfrog matches direct incidence option in EPP-ASM, no ART", {
+test_that("Leapfrog matches direct incidence option in EPP-ASM, no ART and no hiv mort", {
   ## Check that prevalence, deaths and incidence  matches between
   ## the two models
   pjnz1 <- "../testdata/spectrum/v6.13/bwa_aim-adult-no-art-no-hiv-deaths_spectrum-v6.13_2022-02-12.pjnz"
+  demo_matches_birthsdeaths(pjnz1)
+  demo_matches_totpop(pjnz1)
+  trans_matches(pjnz1)
+})
+
+test_that("Leapfrog matches direct incidence option in EPP-ASM, no ART + hiv mort", {
+  ## Check that prevalence, deaths and incidence  matches between
+  ## the two models
+  pjnz1 <- "../testdata/spectrum/v6.13/bwa_aim-adult-no-art-plus-hiv-deaths_spectrum-v6.13_2022-02-12.PJNZ"
   demo_matches_birthsdeaths(pjnz1)
   demo_matches_totpop(pjnz1)
   trans_matches(pjnz1)

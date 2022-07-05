@@ -29,7 +29,7 @@ demo_matches_birthsdeaths <- function(pjnz){
   expect_true(all(abs(specres$natdeaths[,,-1] - lmod1$natdeaths[,,-1]) /specres$natdeaths[,,-1] < 0.05 | abs(lmod1$natdeaths[,,-1] - specres$natdeaths[,,-1]) < 0.001))
 
   ## births by age, changed to pct diff
-  expect_true(all(abs(specres$births[-1] - lmod1$births[-1]) / specres$births[-1] < 1e-5))
+  expect_true(all(abs(specres$births[-1] - lmod1$births[-1]) / specres$births[-1] < 1e-3))
 
 }
 
