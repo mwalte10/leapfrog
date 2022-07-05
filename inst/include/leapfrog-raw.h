@@ -209,24 +209,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
       totpop1(a, g, t) *= 1.0 + migrate_ag(a, g);
     }
 
-    // fertility
 
-    births(t) = 0.0;
-    for(int af = 0; af < pAG_FERT; af++) {
-      births(t) += (totpop1(pIDX_FERT + af, FEMALE, t-1) + totpop1(pIDX_FERT + af, FEMALE, t)) * 0.5 * asfr(af, t);
-    }
-
-    // add births
-    for(int g = 0; g < NG; g++) {
-      Type births_sex = births(t) * births_sex_prop(g, t);
-      natdeaths(0, g, t) = births_sex * (1.0 - sx(0, g, t));
-      totpop1(0, g, t) =  births_sex * sx(0, g, t);
-
-      // Assume 2/3 survival rate since mortality in first six months higher than
-      // second 6 months (Spectrum manual, section 6.2.7.4)
-      Type migrate_a0 = netmigr(0, g, t) * (1.0 + 2.0 * sx(0, g, t)) / 3.0 / totpop1(0, g, t);
-      totpop1(0, g, t) *= 1.0 + migrate_a0;
-    }
 
     // // demographic projection of the adult HIV population
 
@@ -239,6 +222,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
 
       // open age group
       natdeaths_hivpop(pAG-1, g, t) += hivpop1(pAG-1, g, t-1) * (1.0 - sx(pAG, g, t));
+      //mkw: this doesn't reflect how natural deaths are taken out of the total pop above, is there a reason for this?
       hivpop1(pAG-1, g, t) += hivpop1(pAG-1, g, t-1);
     }
 
@@ -336,7 +320,25 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
       } // loop over ha
     } // loop over g
 
-
+    
+    // fertility
+    
+    births(t) = 0.0;
+    for(int af = 0; af < pAG_FERT; af++) {
+      births(t) += (totpop1(pIDX_FERT + af, FEMALE, t-1) + totpop1(pIDX_FERT + af, FEMALE, t)) * 0.5 * asfr(af, t);
+    }
+    
+    // add births
+    for(int g = 0; g < NG; g++) {
+      Type births_sex = births(t) * births_sex_prop(g, t);
+      natdeaths(0, g, t) = births_sex * (1.0 - sx(0, g, t));
+      totpop1(0, g, t) =  births_sex * sx(0, g, t);
+      
+      // Assume 2/3 survival rate since mortality in first six months higher than
+      // second 6 months (Spectrum manual, section 6.2.7.4)
+      Type migrate_a0 = netmigr(0, g, t) * (1.0 + 2.0 * sx(0, g, t)) / 3.0 / totpop1(0, g, t);
+      totpop1(0, g, t) *= 1.0 + migrate_a0;
+    }
 
     //////////////////////////////////////
     ////  Adult HIV model simulation  ////
@@ -389,6 +391,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
         }
       }
     }
+    
 
     for(int hts = 0; hts < hiv_steps_per_year; hts++) {
 
