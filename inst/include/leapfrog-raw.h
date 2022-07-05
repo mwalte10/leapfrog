@@ -71,6 +71,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
                     //outputs
                     Type *p_totpop1,
                     Type *p_hivpop1,
+                    Type *p_hivn_agt,
                     Type *p_infections,
                     Type *p_hivstrat_adult,
                     Type *p_artstrat_adult,
@@ -145,6 +146,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   // outputs
   TensorMapX3T totpop1(p_totpop1, pAG, NG, sim_years);
   TensorMapX3T hivpop1(p_hivpop1, pAG, NG, sim_years);
+  TensorMapX3T hivn_agt(p_hivn_agt, pAG, NG, sim_years);
   TensorMapX3T infections(p_infections, pAG, NG, sim_years);
   TensorMapX1T births(p_births, sim_years);  
   TensorMapX3T natdeaths(p_natdeaths, pAG, NG, sim_years);
@@ -165,6 +167,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
     }
   }
   hivpop1.setZero();
+  hivn_agt.setZero();
   hivstrat_adult.setZero();
   artstrat_adult.setZero();
 
@@ -320,7 +323,11 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
       } // loop over ha
     } // loop over g
 
-    
+    for(int g = 0; g < NG; g++) {
+      for(int a = pIDX_INCIDPOP; a < pAG; a++) {
+        hivn_agt(a, g, t) = totpop1(a, g, t) - hivpop1(a, g, t);
+      }
+    }
     // fertility
     
     births(t) = 0.0;
@@ -360,9 +367,9 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
     if(eppmod == EPP_DIRECTINCID_ANN ||
        eppmod == EPP_DIRECTINCID_HTS ) {
 
-      // Calculating new infections once per year (like Spectrum)
-
+      
       TensorFixedSize<Type, Sizes<pAG, NG>> hivn_ag;
+      // Calculating new infections once per year (like Spectrum)
       for(int g = 0; g < NG; g++) {
         for(int a = pIDX_INCIDPOP; a < pAG; a++) {
           hivn_ag(a, g) = totpop1(a, g, t-1) - hivpop1(a, g, t-1);
