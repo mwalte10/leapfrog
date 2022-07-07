@@ -1,4 +1,4 @@
-demo_matches_totpop <- function(pjnz){
+demog_matches_totpop <- function(pjnz){
   pjnz1 <- test_path(pjnz)
   demp1 <- prepare_leapfrog_demp(pjnz1)
   hivp1 <- prepare_leapfrog_projp(pjnz1)
@@ -11,7 +11,7 @@ demo_matches_totpop <- function(pjnz){
   
 }
 
-demo_matches_birthsdeaths <- function(pjnz){
+demog_matches_birthsdeaths <- function(pjnz){
   pjnz1 <- test_path(pjnz)
   demp1 <- prepare_leapfrog_demp(pjnz1)
   hivp1 <- prepare_leapfrog_projp(pjnz1)
@@ -47,6 +47,7 @@ trans_matches <- function(pjnz){
   demp$netmigr_adj <- adjust_spectrum_netmigr(demp$netmigr)
   
   lmod <- leapfrogR(demp, hivp)
+
   specres <- eppasm::read_hivproj_output(pjnz1)
 
   ## PREVALENCE
