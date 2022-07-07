@@ -16,17 +16,9 @@ test_that("DemProj only matches EPP-ASM", {
   demp$netmigr_adj <- adjust_spectrum_netmigr(demp$netmigr)
   
   lmod <- leapfrogR(demp, hivp)
+  specres <- eppasm::read_hivproj_output(pjnz1)
 
-  expect_warning(fp <- eppasm::prepare_directincid(pjnz1),
-                 "no non-missing arguments to min; returning Inf")
-  fp$tARTstart <- 61L
-
-  ## Replace ASFR because demp$asfr is normalised, but fp$asfr is not
-  fp$asfr <- demp$asfr
-    
-  mod <- eppasm::simmod(fp)
-
-  expect_equal(lmod$totpop1[16:80,,], mod[1:65,,1,])
+  expect_true(all(abs((lmod$totpop1 - specres$totpop) /  specres$totpop) < 0.01))
 })
 
 test_that("Leapfrog matches DemProj projection without migration", {
@@ -37,17 +29,17 @@ test_that("Leapfrog matches DemProj projection without migration", {
 })
 
 ##TODO: add in test for hiv entrant population
-test_that("Age 15 entrant population matches", {
-  
-  
-})
+# test_that("Age 15 entrant population matches", {
+#   
+#   
+# })
 
 test_that("Leapfrog matches direct incidence option in EPP-ASM, no ART and no hiv mort", {
   ## Check that prevalence, deaths and incidence  matches between
   ## the two models
   pjnz1 <- "../testdata/spectrum/v6.13/bwa_aim-adult-no-art-no-hiv-deaths_spectrum-v6.13_2022-02-12.pjnz"
-  demo_matches_birthsdeaths(pjnz1)
-  demo_matches_totpop(pjnz1)
+  demog_matches_birthsdeaths(pjnz1)
+  demog_matches_totpop(pjnz1)
   trans_matches(pjnz1)
 })
 
@@ -55,20 +47,7 @@ test_that("Leapfrog matches direct incidence option in EPP-ASM, no ART + hiv mor
   ## Check that prevalence, deaths and incidence  matches between
   ## the two models
   pjnz1 <- "../testdata/spectrum/v6.13/bwa_aim-adult-no-art-plus-hiv-deaths_spectrum-v6.13_2022-02-12.PJNZ"
-  demo_matches_birthsdeaths(pjnz1)
-  demo_matches_totpop(pjnz1)
+  demog_matches_birthsdeaths(pjnz1)
+  demog_matches_totpop(pjnz1)
   trans_matches(pjnz1)
 })
-
-
-# 
-# test_that("Leapfrog matches direct incidence option in EPP-ASM, ART", {
-#   ## Check that prevalence, deaths and incidence  matches between
-#   ## the two models
-#   pjnz1 <- "../testdata/spectrum/v6.13/bwa_aim-adult-art-no-special-elig_v6.13_2022-04-18.PJNZ"
-#   demog_matches_birthsdeaths(pjnz1)
-#   demog_matches_totpop(pjnz1)
-#   trans_matches(pjnz1)
-# })
-
-## check that incidence pattern looks normal, following incrr_age
