@@ -69,6 +69,8 @@ The default file had no 'special population' ART eligibility. This is retained.
 * Set adult ART coverage to zero for all years
 * HIV-AIDS mortality set to zero, ensuring that all deaths occur due to all-cause mortality
 
+PURPOSE: ensure that HIV incidence and prevalence align 
+
 
 ## `v6.13/bwa_aim-adult-no-art-plus-hiv-deaths_spectrum-v6.13_2022-02-12.PJNZ`
 
@@ -76,3 +78,4 @@ The default file had no 'special population' ART eligibility. This is retained.
 * Fertility rate ratios for women with HIV set to one
 * Set adult ART coverage to zero for all years
 
+PURPOSE: ensure that HIV transmission dynanmics for adults align between Spectrum and Leapfrog
