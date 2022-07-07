@@ -60,3 +60,19 @@ The default file had no 'special population' ART eligibility. This is retained.
   with distribution 15%, 30%, 55%, and percentage for 2021 onwards
 
 * Convert adult ART input to number through year 2020, percentage for 2021 onwards
+
+
+## `v6.13/bwa_aim-adult-no-art-no-hiv-deaths_spectrum-v6.13_2022-02-12.PJNZ`
+
+* Developed from v6.13/bwa_aim-adult-no-art_spectrum-v6.13_2022-02-12.PJNZ
+* Fertility rate ratios for women with HIV set to one
+* Set adult ART coverage to zero for all years
+* HIV-AIDS mortality set to zero, ensuring that all deaths occur due to all-cause mortality
+
+
+## `v6.13/bwa_aim-adult-no-art-plus-hiv-deaths_spectrum-v6.13_2022-02-12.PJNZ`
+
+* Developed from v6.13/bwa_aim-adult-no-art_spectrum-v6.13_2022-02-12.PJNZ
+* Fertility rate ratios for women with HIV set to one
+* Set adult ART coverage to zero for all years
+
