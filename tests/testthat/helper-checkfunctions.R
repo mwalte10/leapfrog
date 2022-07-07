@@ -1,4 +1,4 @@
-demo_matches_totpop <- function(pjnz){
+demog_matches_totpop <- function(pjnz){
   pjnz1 <- test_path(pjnz)
   demp1 <- prepare_leapfrog_demp(pjnz1)
   hivp1 <- prepare_leapfrog_projp(pjnz1)
@@ -11,7 +11,7 @@ demo_matches_totpop <- function(pjnz){
   
 }
 
-demo_matches_birthsdeaths <- function(pjnz){
+demog_matches_birthsdeaths <- function(pjnz){
   pjnz1 <- test_path(pjnz)
   demp1 <- prepare_leapfrog_demp(pjnz1)
   hivp1 <- prepare_leapfrog_projp(pjnz1)
@@ -48,9 +48,8 @@ trans_matches <- function(pjnz){
   
   lmod <- leapfrogR(demp, hivp)
   
- fp <- eppasm::prepare_directincid(pjnz1)
-  fp$tARTstart <- 61L
-  
+  fp <- eppasm::prepare_directincid(pjnz1)
+
   ## Replace ASFR because demp$asfr is normalised, but fp$asfr is not
   fp$asfr <- demp$asfr
   

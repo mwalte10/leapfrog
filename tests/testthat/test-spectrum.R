@@ -31,8 +31,14 @@ test_that("DemProj only matches EPP-ASM", {
 
 test_that("Leapfrog matches DemProj projection without migration", {
 
-  demo_matches_birthsdeaths("../testdata/spectrum/v6.13/bwa_demproj-only-no-mig_spectrum-v6.13_2022-02-12.PJNZ")
-  demo_matches_totpop("../testdata/spectrum/v6.13/bwa_demproj-only-no-mig_spectrum-v6.13_2022-02-12.PJNZ")
+  demog_matches_birthsdeaths("../testdata/spectrum/v6.13/bwa_demproj-only-no-mig_spectrum-v6.13_2022-02-12.PJNZ")
+  demog_matches_totpop("../testdata/spectrum/v6.13/bwa_demproj-only-no-mig_spectrum-v6.13_2022-02-12.PJNZ")
+  
+})
+
+##TODO: add in test for hiv entrant population
+test_that("Age 15 entrant population matches", {
+  
   
 })
 
@@ -41,8 +47,8 @@ test_that("Leapfrog matches DemProj projection without migration", {
 #   ## Check that prevalence, deaths and incidence  matches between
 #   ## the two models
 #   pjnz1 <- "../testdata/spectrum/v6.13/bwa_aim-adult-no-art_spectrum-v6.13_2022-02-12.pjnz"
-#   demo_matches_birthsdeaths(pjnz1)
-#   demo_matches_totpop(pjnz1)
+#   demog_matches_birthsdeaths(pjnz1)
+#   demog_matches_totpop(pjnz1)
 #   trans_matches(pjnz1)
 # })
 # 
@@ -50,8 +56,8 @@ test_that("Leapfrog matches DemProj projection without migration", {
 #   ## Check that prevalence, deaths and incidence  matches between
 #   ## the two models
 #   pjnz1 <- "../testdata/spectrum/v6.13/bwa_aim-adult-art-no-special-elig_v6.13_2022-04-18.PJNZ"
-#   demo_matches_birthsdeaths(pjnz1)
-#   demo_matches_totpop(pjnz1)
+#   demog_matches_birthsdeaths(pjnz1)
+#   demog_matches_totpop(pjnz1)
 #   trans_matches(pjnz1)
 # })
 
