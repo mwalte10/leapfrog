@@ -6,12 +6,12 @@ demog_matches_totpop <- function(pjnz){
   
   diff <- lmod1$totpop1[,,2:6] - demp1$basepop[,,2:6]
   
-  expect_true(all(abs(diff) < 0.01))
-  
+  expect_true(all(abs(diff) < 0.01), label = "Total population and base population align")
+
   
 }
 
-demog_matches_birthsdeaths <- function(pjnz){
+demog_matches_birthsdeaths <- function(pjnz, threshold_deaths = 0.05, threshold_births = 1e-3, threshold_absolute = 1e-3){
   pjnz1 <- test_path(pjnz)
   demp1 <- prepare_leapfrog_demp(pjnz1)
   hivp1 <- prepare_leapfrog_projp(pjnz1)
@@ -22,18 +22,21 @@ demog_matches_birthsdeaths <- function(pjnz){
   specres <- eppasm::read_hivproj_output(pjnz1)
   
   ## modifying this because the no art spectrum doesn't pass this. Moved it from 0.001 to 0.01, the max is 0.008
-  expect_true(all(abs(diff) < 0.01))
+  expect_true(all(abs(diff) < 0.01), label = "Total population and base population align")
   
   ## deaths by sex/age
   ## NOTE: this does not pass for the no-art spectrum run, changing to pct_diff & abs diff
-  expect_true(all(abs(specres$natdeaths[,,-1] - lmod1$natdeaths[,,-1]) /specres$natdeaths[,,-1] < 0.05 | abs(lmod1$natdeaths[,,-1] - specres$natdeaths[,,-1]) < 0.001))
+  expect_true(all(abs(specres$natdeaths[,,-1] - lmod1$natdeaths[,,-1]) /specres$natdeaths[,,-1] < threshold_deaths | abs(lmod1$natdeaths[,,-1] - specres$natdeaths[,,-1]) < threshold_absolute), 
+              label = paste0("Spectrum and natural deaths are less than ", threshold_deaths * 100, "% different and differ by less than ", threshold_absolute, " for all age, sex, year combinations"))
 
   ## births by age, changed to pct diff
-  expect_true(all(abs(specres$births[-1] - lmod1$births[-1]) / specres$births[-1] < 1e-3))
+  expect_true(all(abs(specres$births[-1] - lmod1$births[-1]) / specres$births[-1] < threshold_births),
+              label = paste0("Spectrum and natural deaths are less than ", threshold_births * 100, "% different for all years"))
+  
 
 }
 
-trans_matches <- function(pjnz){
+trans_matches <- function(pjnz, threshold_absolute_pid = c(250, 25, 3)){
   ## Check that prevalence, deaths and incidence  matches between
   ## the two models
   pjnz1 <- test_path(pjnz)
@@ -51,12 +54,15 @@ trans_matches <- function(pjnz){
   specres <- eppasm::read_hivproj_output(pjnz1)
 
   ## PREVALENCE
-  expect_true(all(abs(lmod$hivpop1[16:81,,-1] - specres$hivpop[16:81,,-1]) < 100 | abs((specres$hivpop[16:81,,-1] - lmod$hivpop1[16:81,,-1]) / specres$hivpop[16:81,,-1]) < 0.1))
-  
-  ##INCIDENCE
-  expect_true(all(abs(lmod$infections[16:81,,-1] - specres$infections[16:81,,-1]) < 15 | abs((specres$infections[16:81,,-1] - lmod$infections[16:81,,-1]) / specres$infections[16:81,,-1]) < 0.05))
+  expect_true(all(abs(lmod$hivpop1[16:81,,-1] - specres$hivpop[16:81,,-1]) < threshold_absolute_pid[1]),
+              label = paste0("HIV population differs by less than ", threshold_absolute_pid[1], " for all 15+, both sexes, and all years."))
 
-  ##HIV DEATHS
-  expect_true(all(abs(lmod$hiv_deaths[16:81,,-1] - specres$hivdeaths[16:81,,-1]) < 3 | abs((specres$hivdeaths[16:81,,-1] - lmod$hiv_deaths[16:81,,-1]) / specres$hivdeaths[16:81,,-1]) < 0.01))
+  ##INCIDENCE
+  expect_true(all(abs(lmod$infections[16:81,,-1] - specres$infections[16:81,,-1]) < threshold_absolute_pid[2]),
+              label = paste0("New infections differ by less than ", threshold_absolute_pid[2], " between leapfrog and Spectrum for 15+, both sexes, and all years."))
   
+  ##HIV DEATHS
+  expect_true(all(abs(lmod$hiv_deaths[16:81,,-1] - specres$hivdeaths[16:81,,-1]) < threshold_absolute_pid[3]),
+              label = paste0("HIV deaths in leapfrog differ by less than ", threshold_absolute_pid[3], " from Spectrum for 15+, both sexes, and all years."))
+
 }
