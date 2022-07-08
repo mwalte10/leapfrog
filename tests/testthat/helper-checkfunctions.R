@@ -1,3 +1,15 @@
+#' test-spectrum helper functions
+#'
+#' Ensure alignment between Spectrum and/or EPPASM and leapfrog
+#' 
+#' @param pjnz The PJNZ file exported from the Spectrum software v6.13
+#' @param threshold_deaths % difference acceptable between leapfrog and Spectrum/EPPASM for all-cause mortality
+#' @param threshold_births % difference acceptable between leapfrog and Spectrum/EPPASM for number births
+#' @param threshold_absolute_pid absolute difference acceptable between leapfrog and Spectrum/EPPASM for Prevalence, Incidence, and Deaths
+#'
+#' @return Information on whether models align appropriately
+#'
+
 demog_matches_totpop <- function(pjnz){
   pjnz1 <- test_path(pjnz)
   demp1 <- prepare_leapfrog_demp(pjnz1)
