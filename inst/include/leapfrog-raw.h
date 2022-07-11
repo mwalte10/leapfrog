@@ -71,6 +71,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
                     //outputs
                     Type *p_totpop1,
                     Type *p_hivpop1,
+                    Type *p_hivnpop1,
                     Type *p_infections,
                     Type *p_hivstrat_adult,
                     Type *p_artstrat_adult,
@@ -145,6 +146,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   // outputs
   TensorMapX3T totpop1(p_totpop1, pAG, NG, sim_years);
   TensorMapX3T hivpop1(p_hivpop1, pAG, NG, sim_years);
+  TensorMapX3T hivnpop1(p_hivnpop1, pAG_FERT, NG, sim_years);
   TensorMapX3T infections(p_infections, pAG, NG, sim_years);
   TensorMapX1T births(p_births, sim_years);  
   TensorMapX3T natdeaths(p_natdeaths, pAG, NG, sim_years);
@@ -162,6 +164,11 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   for(int g = 0; g < NG; g++) {
     for(int a = 0; a < pAG; a++) {
       totpop1(a, g, 0) = basepop(a, g);
+    }
+  }
+  for(int g = 0; g < NG; g++) {
+    for(int a = (pIDX_FERT- 1); a < (pAG_FERT + pIDX_FERT); a++) {
+      hivnpop1(a - 14, g, 0) = basepop(a, g);
     }
   }
   hivpop1.setZero();
@@ -322,6 +329,25 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
 
     
     // fertility
+    //mkw: changing this to reflect the effects of hiv on fertility
+    //create hiv negative population
+    //apply normal asfr to hiv negative population
+    //apply asfr + frr to hiv pos population
+    //don't need to make this time dependent because hivagestrat will just be zero until tranmsission starts
+    //age strat prev: cd4, 15-80, sex, year
+    //totpop1: 1-80+, sex, years
+    //hivpop1: 1-80+, sex, years
+    //note that fert rat is in 5 year intervals 
+    //think this needs to go at the end of the loop maybe? Because hivpop won't be defined? right now just going to do it for the 
+    //previous time step
+    
+    
+    //Just need fertliity indicies
+    for(int g = 0; g < NG; g++){
+      for(int a = (pIDX_FERT- 1); a < (pAG_FERT + pIDX_FERT); a++){
+        hivnpop1(a - 14, g, t) = totpop1(a, g, t) - hivpop1(a, g, t - 1);
+      }
+    }
     
     births(t) = 0.0;
     for(int af = 0; af < pAG_FERT; af++) {
