@@ -9,6 +9,38 @@
 #'
 #' @return Information on whether models align appropriately
 #'
+#'
+
+
+matches_coarse_age_groups <- function(pjnz = "../testdata/spectrum/v6.13/bwa_demproj-only_spectrum-v6.13_2022-02-12.PJNZ", threshold_pid = c(900, 1, 0.05)){
+  pjnz1 <- test_path(pjnz)
+  demp <- prepare_leapfrog_demp(pjnz1)
+  hivp <- prepare_leapfrog_projp(pjnz1)
+  
+  ## Replace netmigr with unadjusted age 0-4 netmigr, which are not
+  ## in EPP-ASM preparation
+  demp$netmigr <- read_netmigr(pjnz1, adjust_u5mig = FALSE)
+  demp$netmigr_adj <- adjust_spectrum_netmigr(demp$netmigr)
+  
+  lmod <- leapfrogR(demp, hivp, hiv_strat = "coarse")
+  
+  expect_warning(fp <- eppasm::prepare_directincid(pjnz1),
+                 "no non-missing arguments to min; returning Inf")
+  fp$tARTstart <- 61L
+  
+  ## Replace ASFR because demp$asfr is normalised, but fp$asfr is not
+  fp$asfr <- demp$asfr
+  
+  mod <- eppasm::simmod(fp)
+  
+  #Not doing the open age group because they are calculated differently 
+  expect_true(all(abs(attr(mod, 'hivpop')[,1:8,,-61] - lmod$hivstrat_adult[,1:8,,-61]) < threshold_pid[1]), label = 'Coarse calculation of HIV population matches EPPASM')
+  expect_true(all(abs(attr(mod, 'infections')[-66,,] - lmod$infections[16:80,,]) < threshold_pid[2]), label = 'Coarse calculation of HIV infections matches EPPASM')
+  expect_true(all(abs(attr(mod, 'hivdeaths')[-66,,] - lmod$hivdeaths[16:80,,]) < threshold_pid[3]), label = 'Coarse calculation of HIV deaths matches EPPASM')
+  expect_true(all(abs(attr(mod, 'natdeaths')[-66,,] - lmod$natdeaths[16:80,,]) < 2), label = 'Coarse calculation of non-HIV deaths matches EPPASM')
+  
+  
+}
 
 demog_matches_totpop <- function(pjnz){
   pjnz1 <- test_path(pjnz)

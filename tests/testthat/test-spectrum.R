@@ -25,6 +25,7 @@ test_that("Leapfrog matches DemProj projection without migration", {
 
   demog_matches_birthsdeaths("../testdata/spectrum/v6.13/bwa_demproj-only-no-mig_spectrum-v6.13_2022-02-12.PJNZ")
   demog_matches_totpop("../testdata/spectrum/v6.13/bwa_demproj-only-no-mig_spectrum-v6.13_2022-02-12.PJNZ")
+  matches_coarse_age_groups("../testdata/spectrum/v6.13/bwa_demproj-only-no-mig_spectrum-v6.13_2022-02-12.PJNZ")
   
 })
 
@@ -41,6 +42,7 @@ test_that("Leapfrog matches direct incidence option in EPP-ASM, no ART and no hi
   demog_matches_birthsdeaths(pjnz1, threshold_deaths = 0.05, threshold_births = 1e-3, threshold_absolute = 1e-3)
   demog_matches_totpop(pjnz1)
   trans_matches(pjnz1, threshold_absolute_pid = c(250, 25, 3))
+  matches_coarse_age_groups(pjnz1, threshold_pid = c(900, 1, 0.05))
 })
 
 test_that("Leapfrog matches direct incidence option in EPP-ASM, no ART + hiv mort", {
@@ -50,4 +52,6 @@ test_that("Leapfrog matches direct incidence option in EPP-ASM, no ART + hiv mor
   demog_matches_birthsdeaths(pjnz1, threshold_deaths = 0.05, threshold_births = 1e-3, threshold_absolute = 1e-3)
   demog_matches_totpop(pjnz1)
   trans_matches(pjnz1, threshold_absolute_pid = c(250, 25, 15))
+  matches_coarse_age_groups(pjnz1, threshold_pid = c(800, 2, 25))
+  
 })
