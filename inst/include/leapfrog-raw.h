@@ -43,6 +43,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
                     // adult incidence
                     const Type *p_incidinput,
                     const Type *p_incrr_sex,
+                    const Type *p_fert_rat,
                     const Type *p_incrr_age,
                     //
                     // adult natural history
@@ -75,7 +76,8 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
                     Type *p_infections,
                     Type *p_hivstrat_adult,
                     Type *p_artstrat_adult,
-		    Type *p_births,
+		                Type *p_births,
+		                Type *p_hiv_births,
                     Type *p_natdeaths,
                     Type *p_natdeaths_hivpop,
                     Type *p_hivdeaths,
@@ -127,6 +129,8 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   // adult HIV incidence
   const TensorMapX1cT incidinput(p_incidinput, sim_years);
   const TensorMapX2cT incrr_sex(p_incrr_sex, NG, sim_years);
+  // mkw: hard coded number of 5 year age groups in fert rat for rn
+  const TensorMapX2cT fert_rat(p_fert_rat, 7, sim_years);
   const TensorMapX3cT incrr_age(p_incrr_age, pAG - pIDX_HIVADULT, NG, sim_years);
 
   // adult HIV natural history
@@ -148,7 +152,8 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   TensorMapX3T hivpop1(p_hivpop1, pAG, NG, sim_years);
   TensorMapX3T hivnpop1(p_hivnpop1, pAG_FERT, NG, sim_years);
   TensorMapX3T infections(p_infections, pAG, NG, sim_years);
-  TensorMapX1T births(p_births, sim_years);  
+  TensorMapX1T births(p_births, sim_years); 
+  TensorMapX1T hiv_births(p_hiv_births, sim_years); 
   TensorMapX3T natdeaths(p_natdeaths, pAG, NG, sim_years);
   TensorMapX3T natdeaths_hivpop(p_natdeaths_hivpop, pAG, NG, sim_years);
   TensorMapX3T hivdeaths(p_hivdeaths, pAG, NG, sim_years);
@@ -229,7 +234,6 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
 
       // open age group
       natdeaths_hivpop(pAG-1, g, t) += hivpop1(pAG-1, g, t-1) * (1.0 - sx(pAG, g, t));
-      //mkw: this doesn't reflect how natural deaths are taken out of the total pop above, is there a reason for this?
       hivpop1(pAG-1, g, t) += hivpop1(pAG-1, g, t-1);
     }
 
@@ -345,14 +349,22 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
     //Just need fertliity indicies
     for(int g = 0; g < NG; g++){
       for(int a = (pIDX_FERT- 1); a < (pAG_FERT + pIDX_FERT); a++){
-        hivnpop1(a - 14, g, t) = totpop1(a, g, t) - hivpop1(a, g, t - 1);
+        hivnpop1(a - 14, g, t) = (totpop1(a, g, t) + totpop1(a, g, t)) * 0.5 - hivpop1(a, g, t - 1);
       }
     }
     
     births(t) = 0.0;
+    hiv_births(t) = 0.0;
     for(int af = 0; af < pAG_FERT; af++) {
-      births(t) += (totpop1(pIDX_FERT + af, FEMALE, t-1) + totpop1(pIDX_FERT + af, FEMALE, t)) * 0.5 * asfr(af, t);
+      births(t) += (hivnpop1(af, FEMALE, t-1) + hivnpop1(af, FEMALE, t)) * 0.5 * asfr(af, t);
+      //births(t) += (totpop1(pIDX_FERT + af, FEMALE, t-1) + totpop1(pIDX_FERT + af, FEMALE, t)) * 0.5 * asfr(af, t);
+      // don't think this needs to be averaged as the hiv pop at this ts hasn't been calculated yet
+      double ind = (af + 1) / 5;
+      ind = ceil(ind);
+      hiv_births(t) += (hivpop1(pIDX_FERT + af + 1, FEMALE, t - 1) * asfr(af, t) * fert_rat(ind, t));
     }
+    
+     births(t) += hiv_births(t);
     
     // add births
     for(int g = 0; g < NG; g++) {
