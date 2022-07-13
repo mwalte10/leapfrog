@@ -357,7 +357,6 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
     hiv_births(t) = 0.0;
     for(int af = 0; af < pAG_FERT; af++) {
       births(t) += (hivnpop1(af, FEMALE, t-1) + hivnpop1(af, FEMALE, t)) * 0.5 * asfr(af, t);
-      //births(t) += (totpop1(pIDX_FERT + af, FEMALE, t-1) + totpop1(pIDX_FERT + af, FEMALE, t)) * 0.5 * asfr(af, t);
       // don't think this needs to be averaged as the hiv pop at this ts hasn't been calculated yet
       double ind = (af + 1) / 5;
       ind = ceil(ind);
