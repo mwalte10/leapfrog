@@ -333,37 +333,23 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
 
     
     // fertility
-    //mkw: changing this to reflect the effects of hiv on fertility
-    //create hiv negative population
-    //apply normal asfr to hiv negative population
-    //apply asfr + frr to hiv pos population
-    //don't need to make this time dependent because hivagestrat will just be zero until tranmsission starts
-    //age strat prev: cd4, 15-80, sex, year
-    //totpop1: 1-80+, sex, years
-    //hivpop1: 1-80+, sex, years
-    //note that fert rat is in 5 year intervals 
-    //think this needs to go at the end of the loop maybe? Because hivpop won't be defined? right now just going to do it for the 
-    //previous time step
-    
-    
-    //Just need fertliity indicies
     for(int g = 0; g < NG; g++){
       for(int a = (pIDX_FERT- 1); a < (pAG_FERT + pIDX_FERT); a++){
-        hivnpop1(a - 14, g, t) = (totpop1(a, g, t) + totpop1(a, g, t)) * 0.5 - hivpop1(a, g, t - 1);
+        hivnpop1(a - 14, g, t) = (totpop1(a, g, t)) - hivpop1(a, g, t - 1);
       }
     }
     
     births(t) = 0.0;
     hiv_births(t) = 0.0;
     for(int af = 0; af < pAG_FERT; af++) {
-      births(t) += (hivnpop1(af, FEMALE, t-1) + hivnpop1(af, FEMALE, t)) * 0.5 * asfr(af, t);
+      births(t) += (hivnpop1(af, FEMALE, t - 1) + hivnpop1(af, FEMALE, t)) * 0.5 * asfr(af, t);
       // don't think this needs to be averaged as the hiv pop at this ts hasn't been calculated yet
       double ind = (af + 1) / 5;
       ind = ceil(ind);
       hiv_births(t) += (hivpop1(pIDX_FERT + af + 1, FEMALE, t - 1) * asfr(af, t) * fert_rat(ind, t));
     }
     
-     births(t) += hiv_births(t);
+    births(t) += hiv_births(t);
     
     // add births
     for(int g = 0; g < NG; g++) {
@@ -376,6 +362,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
       Type migrate_a0 = netmigr(0, g, t) * (1.0 + 2.0 * sx(0, g, t)) / 3.0 / totpop1(0, g, t);
       totpop1(0, g, t) *= 1.0 + migrate_a0;
     }
+    
 
     //////////////////////////////////////
     ////  Adult HIV model simulation  ////
@@ -662,6 +649,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
           }  // end if(pop_ha[ha] > 0)
         }
       }
+      
 
 
     } // loop hiv_steps_per_year
