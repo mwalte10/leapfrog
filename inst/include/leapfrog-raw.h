@@ -625,31 +625,30 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
           }  // end if(pop_ha[ha] > 0)
         }
       }
-      
-      // adjust population to match target population size
-     // TensorFixedSize<Type, Sizes<hAG, NG>> popadjprob;
-     // TensorFixedSize<Type, Sizes<hAG, NG>> hivpopadjprob;
-      for(int g = 0; g < NG; g++){
-        for(int ha = 0; ha < pAG; ha++){
-          //popadjprob(ha, g) = 0.0;
-          //popadjprob(ha, g) = basepop(ha, g, t) / totpop1(ha, g, t);
-          // maybe need to change this for coarse age groups
-         // hivpopadjprob(ha, g) = popadjprob(ha, g) ;
-          
-          totpop1(ha, g, t) = basepop(ha, g, t);
-          hivpop1(ha, g, t) =  hivpop1(ha, g, t) * basepop(ha, g, t) / totpop1(ha, g, t);
-          
-          //hivpop1(ha, g, t) = hivpopadjprob(ha, g) * hivpop1(ha, g, t);
-          //if (t >= t_ART_start) {
-          //to do: need to add in scalar to ART population
-          //}
-          
-        }
+
+
+    } 
+    // loop hiv_steps_per_year
+    // adjust population to match target population size
+    // TensorFixedSize<Type, Sizes<hAG, NG>> popadjprob;
+    // TensorFixedSize<Type, Sizes<hAG, NG>> hivpopadjprob;
+    for(int g = 0; g < NG; g++){
+      for(int ha = 0; ha < pAG; ha++){
+        //popadjprob(ha, g) = 0.0;
+        //popadjprob(ha, g) = basepop(ha, g, t) / totpop1(ha, g, t);
+        // maybe need to change this for coarse age groups
+        // hivpopadjprob(ha, g) = popadjprob(ha, g) ;
+        
+        totpop1(ha, g, t) = basepop(ha, g, t);
+        hivpop1(ha, g, t) =  hivpop1(ha, g, t) * basepop(ha, g, t) / totpop1(ha, g, t);
+        
+        //hivpop1(ha, g, t) = hivpopadjprob(ha, g) * hivpop1(ha, g, t);
+        //if (t >= t_ART_start) {
+        //to do: need to add in scalar to ART population
+        //}
+        
       }
-
-
-    } // loop hiv_steps_per_year
-
+    }
   }
 
   return;

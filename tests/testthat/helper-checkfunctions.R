@@ -47,7 +47,7 @@ demog_matches_totpop <- function(pjnz){
   
   diff <- lmod1$totpop1 - demp1$basepop
   
-  expect_true(all(abs(diff) < 0.5), label = "Total population and base population align")
+  expect_true(all(abs(diff) == 0), label = "Total population and base population align")
 
   
 }
@@ -61,7 +61,6 @@ demog_matches_birthsdeaths <- function(pjnz, threshold_deaths = 3, threshold_bir
   specres <- eppasm::read_hivproj_output(pjnz1)
   
   ## deaths by sex/age
-  ## NOTE: this does not pass for the no-art spectrum run, changing to pct_diff & abs diff
   expect_true(all(abs(lmod1$natdeaths[,,-1] - specres$natdeaths[,,-1]) < threshold_deaths), 
               label = paste0("Spectrum and leapfrog natural deaths differ by less than ", threshold_deaths, " for all age, sex, year combinations"))
 
