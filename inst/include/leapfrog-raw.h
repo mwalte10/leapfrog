@@ -174,7 +174,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
 
   for(int g = 0; g < NG; g++) {
     for(int a = (pIDX_FERT- 1); a < (pAG_FERT + pIDX_FERT); a++) {
-      hivnpop1(a - 14, g, 0) = basepop(a, g);
+      hivnpop1(a - 14, g, 0) = basepop(a, g, 0);
     }
   }
   hivpop1.setZero();
@@ -332,29 +332,29 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
       } // loop over ha
     } // loop over g
 
-    for(int g = 0; g < NG; g++) {
-      for(int a = pIDX_INCIDPOP; a < pAG; a++) {
-        hivn_agt(a, g, t) = totpop1(a, g, t) - hivpop1(a, g, t);
-      }
-    }
+
     // fertility
     for(int g = 0; g < NG; g++){
       for(int a = (pIDX_FERT- 1); a < (pAG_FERT + pIDX_FERT); a++){
-        hivnpop1(a - 14, g, t) = (totpop1(a, g, t)) - hivpop1(a, g, t - 1);
+        //changing this because eventually the tot pop will be basepop
+        hivnpop1(a - 14, g, t) = (basepop(a, g, t)) - hivpop1(a, g, t - 1);
+        
       }
     }
     
     births(t) = 0.0;
     hiv_births(t) = 0.0;
-    for(int af = 0; af < pAG_FERT; af++) {
-      births(t) += (hivnpop1(af, FEMALE, t - 1) + hivnpop1(af, FEMALE, t)) * 0.5 * asfr(af, t);
+   for(int af = 0; af < pAG_FERT; af++) {
+     // births(t) += (hivnpop1(af, FEMALE, t - 1) + hivnpop1(af, FEMALE, t)) * 0.5 * asfr(af, t);
+      births(t) += (totpop1(af, FEMALE, t - 1) + totpop1(af, FEMALE, t)) * 0.5 * asfr(af, t);
+     
       // don't think this needs to be averaged as the hiv pop at this ts hasn't been calculated yet
-      double ind = (af + 1) / 5;
-      ind = ceil(ind);
-      hiv_births(t) += (hivpop1(pIDX_FERT + af + 1, FEMALE, t - 1) * asfr(af, t) * fert_rat(ind, t));
+     // double ind = (af + 1) / 5;
+     // ind = ceil(ind);
+     // hiv_births(t) += (hivpop1(pIDX_FERT + af, FEMALE, t - 1) * asfr(af, t) * fert_rat(ind, t));
     }
     
-    births(t) += hiv_births(t);
+   // births(t) += hiv_births(t);
     
     // add births
     for(int g = 0; g < NG; g++) {
