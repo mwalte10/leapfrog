@@ -75,7 +75,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
                     Type *p_infections,
                     Type *p_hivstrat_adult,
                     Type *p_artstrat_adult,
-		                Type *p_births,
+		    Type *p_births,
                     Type *p_natdeaths,
                     Type *p_natdeaths_hivpop,
                     Type *p_hivdeaths,
@@ -118,7 +118,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   double dt = 1.0 / hiv_steps_per_year;
 
   // demography
-  const TensorMapX2cT basepop(p_basepop, pAG, NG);
+  const TensorMapX3cT basepop(p_basepop, pAG, NG, sim_years);
   const TensorMapX3cT sx(p_sx, pAG+1, NG, sim_years);
   const TensorMapX3cT netmigr(p_netmigr, pAG, NG, sim_years);
   const TensorMapX2cT asfr(p_asfr, pAG_FERT, sim_years);
@@ -163,9 +163,10 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
 
   for(int g = 0; g < NG; g++) {
     for(int a = 0; a < pAG; a++) {
-      totpop1(a, g, 0) = basepop(a, g);
+      totpop1(a, g, 0) = basepop(a, g, 0);
     }
   }
+
   hivpop1.setZero();
   hivn_agt.setZero();
   hivstrat_adult.setZero();
@@ -225,7 +226,6 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
 
       // open age group
       natdeaths_hivpop(pAG-1, g, t) += hivpop1(pAG-1, g, t-1) * (1.0 - sx(pAG, g, t));
-      //mkw: this doesn't reflect how natural deaths are taken out of the total pop above, is there a reason for this?
       hivpop1(pAG-1, g, t) += hivpop1(pAG-1, g, t-1);
     }
 
@@ -634,8 +634,28 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
       }
 
 
-    } // loop hiv_steps_per_year
-
+    } 
+    // loop hiv_steps_per_year
+    // adjust population to match target population size
+    // TensorFixedSize<Type, Sizes<hAG, NG>> popadjprob;
+    // TensorFixedSize<Type, Sizes<hAG, NG>> hivpopadjprob;
+    for(int g = 0; g < NG; g++){
+      for(int ha = 0; ha < pAG; ha++){
+        //popadjprob(ha, g) = 0.0;
+        //popadjprob(ha, g) = basepop(ha, g, t) / totpop1(ha, g, t);
+        // maybe need to change this for coarse age groups
+        // hivpopadjprob(ha, g) = popadjprob(ha, g) ;
+        
+        totpop1(ha, g, t) = basepop(ha, g, t);
+        hivpop1(ha, g, t) =  hivpop1(ha, g, t) * basepop(ha, g, t) / totpop1(ha, g, t);
+        
+        //hivpop1(ha, g, t) = hivpopadjprob(ha, g) * hivpop1(ha, g, t);
+        //if (t >= t_ART_start) {
+        //to do: need to add in scalar to ART population
+        //}
+        
+      }
+    }
   }
 
   return;
