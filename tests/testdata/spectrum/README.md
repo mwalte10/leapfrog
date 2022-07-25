@@ -21,7 +21,7 @@ This file has the demographic and AIM modules included, with the following const
 
 Purpose: Ensure that incidence and disease progression between Spectrum and leapfrog align.
 
-## `v6.13/bwa_aim-adult-no-art-plus-hiv-deaths_spectrum-v6.13_2022-02-12.pjnz`
+## `v6.13/bwa_aim-adult-no-art-spectrum-v6.13_2022-02-12.pjnz`
 This file has the demographic and AIM modules included, with the following constraints placed on the AIM model:
 
 * Adult ART coverage set to zero
@@ -31,6 +31,10 @@ This file has the demographic and AIM modules included, with the following const
 
 Purpose: Ensure that incidence, disease progression, and HIV related mortality between Spectrum and leapfrog align. Also confirm that the introduction of HIV-related mortality doesn't change functionality of the demographic projection model.
 
+
+
+
+## Jeff's drafts below
 
 ## `bwa_aim-adult-no
 
