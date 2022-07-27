@@ -211,6 +211,14 @@ prepare_leapfrog_projp <- function(pjnz, hiv_steps_per_year = 10L, hTS = 3) {
   ## State space dimensions
   v$hAG_SPAN_full <- rep(1L, 66L)
   v$hAG_SPAN_coarse <- c(2L, 3L, 5L, 5L, 5L, 5L, 5L, 5L, 31L)
+  
+  ## Add in pediatric components
+  v$fert_rat <- apply(projp$fert_rat, 2, rep, each = 5)
+  rownames(v$fert_rat) <- 15:49
+  v$cd4fert_rat <- projp$cd4fert_rat
+  v$frr_art6mos <- projp$frr_art6mos
+  v$frr_scalar <- projp$frr_scalar
+  
 
   v
 }
