@@ -31,5 +31,31 @@ test_that("Leapfrog matches direct incidence option at coarse and single year ag
   demog_matches_totpop(pjnz1)
   transmission_matches(pjnz1, threshold_absolute_pid = c(145, 25, 15))
   matches_coarse_age_groups(pjnz1, threshold_pid = c(640, 4, 20), threshold_naturaldeaths = 3)
+
+})
+
+test_that("Leapfrog matches direct incidence option in EPP-ASM, no ART + hiv mort", {
+  ## Check that prevalence, deaths and incidence  matches between
+  ## the two models
+  pjnz1 <- "../testdata/spectrum/v6.13/bwa_aim-adult-no-art-hiv-fert_spectrum-v6.13_2022-02-12.PJNZ"
+  demog_matches_birthsdeaths(pjnz1, threshold_deaths = 0.2, threshold_births = 0.13, threshold_absolute = 1e-3)
+  ## demog_matches_totpop(pjnz1)
+  trans_matches(pjnz1, threshold_absolute_pid = c(355, 50, 30))
+  matches_coarse_age_groups(pjnz1, threshold_pid = c(700, 50, 35))
   
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

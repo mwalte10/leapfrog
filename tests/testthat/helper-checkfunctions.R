@@ -33,13 +33,14 @@ matches_coarse_age_groups <- function(pjnz = "../testdata/spectrum/v6.13/bwa_dem
   #Not doing the open age group because they are calculated differently 
   expect_true(all(abs(attr(mod, 'hivpop')[,1:8,,-61] - lmod$hivstrat_adult[,1:8,,-61]) <= threshold_pid[1]), label = 'Coarse calculation of HIV population matches EPPASM')
   expect_true(all(abs(attr(mod, 'infections')[-66,,] - lmod$infections[16:80,,]) <= threshold_pid[2]), label = 'Coarse calculation of HIV infections matches EPPASM')
-  expect_true(all(abs(attr(mod, 'hivdeaths')[-66,,] - lmod$hivdeaths[16:80,,]) <= threshold_pid[3]), label = 'Coarse calculation of HIV deaths matches EPPASM')
+  expect_true(all(abs(fattr(mod, 'hivdeaths')[-66,,] - lmod$hivdeaths[16:80,,]) <= threshold_pid[3]), label = 'Coarse calculation of HIV deaths matches EPPASM')
   expect_true(all(abs(attr(mod, 'natdeaths')[-66,,] - lmod$natdeaths[16:80,,]) <= threshold_naturaldeaths), label = 'Coarse calculation of non-HIV deaths matches EPPASM')
+
 
   
 }
 
-demog_matches_totpop <- function(pjnz){
+demog_matches_totpop <- function(pjnz, threshold = 0.01){
   pjnz1 <- test_path(pjnz)
   demp1 <- prepare_leapfrog_demp(pjnz1)
   hivp1 <- prepare_leapfrog_projp(pjnz1)
@@ -49,6 +50,7 @@ demog_matches_totpop <- function(pjnz){
   
   expect_true(all(abs(diff) == 0), label = "Total population and base population align")
 
+
   
 }
 
@@ -57,8 +59,9 @@ demog_matches_birthsdeaths <- function(pjnz, threshold_deaths = 3, threshold_bir
   demp1 <- prepare_leapfrog_demp(pjnz1)
   hivp1 <- prepare_leapfrog_projp(pjnz1)
   lmod1 <- leapfrogR(demp1, hivp1)
-  
+
   specres <- eppasm::read_hivproj_output(pjnz1)
+
   
   ## deaths by sex/age
   expect_true(all(abs(lmod1$natdeaths[,,-1] - specres$natdeaths[,,-1]) < threshold_deaths), 

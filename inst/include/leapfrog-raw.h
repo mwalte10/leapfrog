@@ -43,6 +43,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
                     // adult incidence
                     const Type *p_incidinput,
                     const Type *p_incrr_sex,
+                    const Type *p_fert_rat,
                     const Type *p_incrr_age,
                     //
                     // adult natural history
@@ -71,10 +72,12 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
                     //outputs
                     Type *p_totpop1,
                     Type *p_hivpop1,
+                    Type *p_hivnpop1,
                     Type *p_infections,
                     Type *p_hivstrat_adult,
                     Type *p_artstrat_adult,
-		    Type *p_births,
+		                Type *p_births,
+		                Type *p_hiv_births,
                     Type *p_natdeaths,
                     Type *p_natdeaths_hivpop,
                     Type *p_hivdeaths,
@@ -126,6 +129,8 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   // adult HIV incidence
   const TensorMapX1cT incidinput(p_incidinput, sim_years);
   const TensorMapX2cT incrr_sex(p_incrr_sex, NG, sim_years);
+  // mkw: hard coded number of 5 year age groups in fert rat for rn
+  const TensorMapX2cT fert_rat(p_fert_rat, pAG, sim_years);
   const TensorMapX3cT incrr_age(p_incrr_age, pAG - pIDX_HIVADULT, NG, sim_years);
 
   // adult HIV natural history
@@ -145,8 +150,10 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   // outputs
   TensorMapX3T totpop1(p_totpop1, pAG, NG, sim_years);
   TensorMapX3T hivpop1(p_hivpop1, pAG, NG, sim_years);
+  TensorMapX3T hivnpop1(p_hivnpop1, pAG, NG, sim_years);
   TensorMapX3T infections(p_infections, pAG, NG, sim_years);
-  TensorMapX1T births(p_births, sim_years);  
+  TensorMapX1T births(p_births, sim_years); 
+  TensorMapX1T hiv_births(p_hiv_births, sim_years); 
   TensorMapX3T natdeaths(p_natdeaths, pAG, NG, sim_years);
   TensorMapX3T natdeaths_hivpop(p_natdeaths_hivpop, pAG, NG, sim_years);
   TensorMapX3T hivdeaths(p_hivdeaths, pAG, NG, sim_years);
@@ -320,14 +327,17 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
       } // loop over ha
     } // loop over g
 
-    
+
     // fertility
+
     
     births(t) = 0.0;
-    for(int af = 0; af < pAG_FERT; af++) {
-      births(t) += (totpop1(pIDX_FERT + af, FEMALE, t-1) + totpop1(pIDX_FERT + af, FEMALE, t)) * 0.5 * asfr(af, t);
+   for(int af = 0; af < pAG_FERT; af++) {
+      births(t) += (totpop1(af, FEMALE, t - 1) + totpop1(af, FEMALE, t)) * 0.5 * asfr(af, t);
+     
     }
     
+
     // add births
     for(int g = 0; g < NG; g++) {
       Type births_sex = births(t) * births_sex_prop(g, t);
@@ -339,6 +349,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
       Type migrate_a0 = netmigr(0, g, t) * (1.0 + 2.0 * sx(0, g, t)) / 3.0 / totpop1(0, g, t);
       totpop1(0, g, t) *= 1.0 + migrate_a0;
     }
+    
 
     //////////////////////////////////////
     ////  Adult HIV model simulation  ////
@@ -360,9 +371,9 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
     if(eppmod == EPP_DIRECTINCID_ANN ||
        eppmod == EPP_DIRECTINCID_HTS ) {
 
-      // Calculating new infections once per year (like Spectrum)
-
+      
       TensorFixedSize<Type, Sizes<pAG, NG>> hivn_ag;
+      // Calculating new infections once per year (like Spectrum)
       for(int g = 0; g < NG; g++) {
         for(int a = pIDX_INCIDPOP; a < pAG; a++) {
           hivn_ag(a, g) = totpop1(a, g, t-1) - hivpop1(a, g, t-1);
@@ -625,6 +636,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
           }  // end if(pop_ha[ha] > 0)
         }
       }
+      
 
 
     } 
@@ -649,6 +661,22 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
         
       }
     }
+    
+    
+   for(int g = 0; g < NG; g++){
+      for(int a = 0; a < pAG; a++){
+        //changing this because eventually the tot pop will be basepop
+        hivnpop1(a, g, t) = (basepop(a, g, t)) - hivpop1(a, g, t);
+        
+      }
+    }
+    hiv_births(t) = 0.0;
+    for(int af = 0; af < pAG; af++) {
+      hiv_births(t) += (hivpop1(pIDX_FERT + af, FEMALE, t + hivpop1(pIDX_FERT + af, FEMALE, t-1) * 0.5) * asfr(af, t) * fert_rat(pIDX_FERT + af, t));
+    }
+    
+
+    
   }
 
   return;

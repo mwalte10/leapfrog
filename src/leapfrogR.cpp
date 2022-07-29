@@ -55,6 +55,9 @@ leapfrogR(const Rcpp::List& demp,
   NumericVector hivpop1(pAG * NG * proj_years);
   hivpop1.attr("dim") = NumericVector::create(pAG, NG, proj_years);
 
+  NumericVector hivnpop1(pAG * NG * proj_years);
+  hivnpop1.attr("dim") = NumericVector::create(pAG, NG, proj_years);
+
   NumericVector infections(pAG * NG * proj_years);
   infections.attr("dim") = NumericVector::create(pAG, NG, proj_years);
 
@@ -65,6 +68,9 @@ leapfrogR(const Rcpp::List& demp,
   artstrat_adult.attr("dim") = NumericVector::create(hTS, hDS, hAG, NG, proj_years);
 
   NumericVector births(proj_years);
+  
+  NumericVector hiv_births(proj_years);
+  
 
   NumericVector natdeaths(pAG * NG * proj_years);
   natdeaths.attr("dim") = NumericVector::create(pAG, NG, proj_years);
@@ -94,6 +100,7 @@ leapfrogR(const Rcpp::List& demp,
        REAL(demp["births_sex_prop"]),
        REAL(projp["incidinput"]),
        REAL(projp["incrr_sex"]),
+       REAL(projp["fert_rat"]),
        REAL(projp["incrr_age"]),
        REAL(projp["cd4_initdist_full"]),
        REAL(projp["cd4_prog_full"]),
@@ -114,10 +121,12 @@ leapfrogR(const Rcpp::List& demp,
        INTEGER(projp["hAG_SPAN_full"]),
        REAL(totpop1),
        REAL(hivpop1),
+       REAL(hivnpop1),
        REAL(infections),
        REAL(hivstrat_adult),
        REAL(artstrat_adult),
        REAL(births),
+       REAL(hiv_births),
        REAL(natdeaths),
        REAL(natdeaths_hivpop),
        REAL(hivdeaths),
@@ -134,6 +143,7 @@ leapfrogR(const Rcpp::List& demp,
        REAL(demp["births_sex_prop"]),
        REAL(projp["incidinput"]),
        REAL(projp["incrr_sex"]),
+       REAL(projp["fert_rat"]),
        REAL(projp["incrr_age"]),
        REAL(projp["cd4_initdist_coarse"]),
        REAL(projp["cd4_prog_coarse"]),
@@ -154,10 +164,12 @@ leapfrogR(const Rcpp::List& demp,
        INTEGER(projp["hAG_SPAN_coarse"]),
        REAL(totpop1),
        REAL(hivpop1),
+       REAL(hivnpop1),
        REAL(infections),
        REAL(hivstrat_adult),
        REAL(artstrat_adult),
-       REAL(births),       
+       REAL(births),
+       REAL(hiv_births),
        REAL(natdeaths),
        REAL(natdeaths_hivpop),
        REAL(hivdeaths),
@@ -170,10 +182,12 @@ leapfrogR(const Rcpp::List& demp,
 
   List ret = List::create(_("totpop1") = totpop1,
 			  _("hivpop1") = hivpop1,
+			  _("hivnpop1") = hivnpop1,
 			  _("hivstrat_adult") = hivstrat_adult,
 			  _("artstrat_adult") = artstrat_adult,
 			  _("infections") = infections,
-			  _("births") = births,			  
+			  _("births") = births,	
+			  _("hiv_births") = hiv_births,			  
 			  _("natdeaths") = natdeaths,
 			  _("natdeaths_hivpop") = natdeaths_hivpop,
 			  _("hivdeaths") = hivdeaths,
