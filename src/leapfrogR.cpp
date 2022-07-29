@@ -54,10 +54,9 @@ leapfrogR(const Rcpp::List& demp,
 
   NumericVector hivpop1(pAG * NG * proj_years);
   hivpop1.attr("dim") = NumericVector::create(pAG, NG, proj_years);
-  
 
-  NumericVector hivnpop1(pAG_FERT * NG * proj_years);
-  hivnpop1.attr("dim") = NumericVector::create(pAG_FERT, NG, proj_years);
+  NumericVector hivnpop1(pAG * NG * proj_years);
+  hivnpop1.attr("dim") = NumericVector::create(pAG, NG, proj_years);
 
   NumericVector infections(pAG * NG * proj_years);
   infections.attr("dim") = NumericVector::create(pAG, NG, proj_years);

@@ -130,7 +130,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   const TensorMapX1cT incidinput(p_incidinput, sim_years);
   const TensorMapX2cT incrr_sex(p_incrr_sex, NG, sim_years);
   // mkw: hard coded number of 5 year age groups in fert rat for rn
-  const TensorMapX2cT fert_rat(p_fert_rat, 7, sim_years);
+  const TensorMapX2cT fert_rat(p_fert_rat, pAG, sim_years);
   const TensorMapX3cT incrr_age(p_incrr_age, pAG - pIDX_HIVADULT, NG, sim_years);
 
   // adult HIV natural history
@@ -150,7 +150,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   // outputs
   TensorMapX3T totpop1(p_totpop1, pAG, NG, sim_years);
   TensorMapX3T hivpop1(p_hivpop1, pAG, NG, sim_years);
-  TensorMapX3T hivnpop1(p_hivnpop1, pAG_FERT, NG, sim_years);
+  TensorMapX3T hivnpop1(p_hivnpop1, pAG, NG, sim_years);
   TensorMapX3T infections(p_infections, pAG, NG, sim_years);
   TensorMapX1T births(p_births, sim_years); 
   TensorMapX1T hiv_births(p_hiv_births, sim_years); 
@@ -172,11 +172,6 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
     }
   }
 
-  for(int g = 0; g < NG; g++) {
-    for(int a = (pIDX_FERT- 1); a < (pAG_FERT + pIDX_FERT); a++) {
-      hivnpop1(a - 14, g, 0) = basepop(a, g, 0);
-    }
-  }
   hivpop1.setZero();
   hivstrat_adult.setZero();
   artstrat_adult.setZero();
@@ -334,28 +329,15 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
 
 
     // fertility
-    for(int g = 0; g < NG; g++){
-      for(int a = (pIDX_FERT- 1); a < (pAG_FERT + pIDX_FERT); a++){
-        //changing this because eventually the tot pop will be basepop
-        hivnpop1(a - 14, g, t) = (basepop(a, g, t)) - hivpop1(a, g, t - 1);
-        
-      }
-    }
+
     
     births(t) = 0.0;
-    hiv_births(t) = 0.0;
    for(int af = 0; af < pAG_FERT; af++) {
-     // births(t) += (hivnpop1(af, FEMALE, t - 1) + hivnpop1(af, FEMALE, t)) * 0.5 * asfr(af, t);
       births(t) += (totpop1(af, FEMALE, t - 1) + totpop1(af, FEMALE, t)) * 0.5 * asfr(af, t);
      
-      // don't think this needs to be averaged as the hiv pop at this ts hasn't been calculated yet
-     // double ind = (af + 1) / 5;
-     // ind = ceil(ind);
-     // hiv_births(t) += (hivpop1(pIDX_FERT + af, FEMALE, t - 1) * asfr(af, t) * fert_rat(ind, t));
     }
     
-   // births(t) += hiv_births(t);
-    
+
     // add births
     for(int g = 0; g < NG; g++) {
       Type births_sex = births(t) * births_sex_prop(g, t);
@@ -679,6 +661,22 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
         
       }
     }
+    
+    
+   for(int g = 0; g < NG; g++){
+      for(int a = 0; a < pAG; a++){
+        //changing this because eventually the tot pop will be basepop
+        hivnpop1(a, g, t) = (basepop(a, g, t)) - hivpop1(a, g, t);
+        
+      }
+    }
+    hiv_births(t) = 0.0;
+    for(int af = 0; af < pAG; af++) {
+      hiv_births(t) += (hivpop1(pIDX_FERT + af, FEMALE, t + hivpop1(pIDX_FERT + af, FEMALE, t-1) * 0.5) * asfr(af, t) * fert_rat(pIDX_FERT + af, t));
+    }
+    
+
+    
   }
 
   return;
