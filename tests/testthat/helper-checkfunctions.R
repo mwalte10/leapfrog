@@ -33,7 +33,7 @@ matches_coarse_age_groups <- function(pjnz = "../testdata/spectrum/v6.13/bwa_dem
   #Not doing the open age group because they are calculated differently 
   expect_true(all(abs(attr(mod, 'hivpop')[,1:8,,-61] - lmod$hivstrat_adult[,1:8,,-61]) <= threshold_pid[1]), label = 'Coarse calculation of HIV population matches EPPASM')
   expect_true(all(abs(attr(mod, 'infections')[-66,,] - lmod$infections[16:80,,]) <= threshold_pid[2]), label = 'Coarse calculation of HIV infections matches EPPASM')
-  expect_true(all(abs(fattr(mod, 'hivdeaths')[-66,,] - lmod$hivdeaths[16:80,,]) <= threshold_pid[3]), label = 'Coarse calculation of HIV deaths matches EPPASM')
+  expect_true(all(abs(attr(mod, 'hivdeaths')[-66,,] - lmod$hivdeaths[16:80,,]) <= threshold_pid[3]), label = 'Coarse calculation of HIV deaths matches EPPASM')
   expect_true(all(abs(attr(mod, 'natdeaths')[-66,,] - lmod$natdeaths[16:80,,]) <= threshold_naturaldeaths), label = 'Coarse calculation of non-HIV deaths matches EPPASM')
 
 
