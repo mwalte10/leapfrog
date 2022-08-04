@@ -65,6 +65,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
                     
                     //paed inputs
                     const Type *p_paed_incid_input,
+                    const Type *p_paed_cd4_dist, 
                     //
                     //settings
                     const int sim_years,
@@ -79,7 +80,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
                     Type *p_infections,
                     Type *p_hivstrat_adult,
                     Type *p_artstrat_adult,
-                   // Type *p_hivstrat_paeds,
+                    //Type *p_hivstrat_paeds,
 		                Type *p_births,
 		                Type *p_hiv_births,
                     Type *p_natdeaths,
@@ -153,6 +154,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   
   // paed
   const TensorMapX1cT paed_incid_input(p_paed_incid_input, sim_years);
+  const TensorMapX1cT paed_cd4_dist(p_paed_cd4_dist, sim_years);
 
   // outputs
   TensorMapX3T totpop1(p_totpop1, pAG, NG, sim_years);

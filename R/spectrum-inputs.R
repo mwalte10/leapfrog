@@ -164,6 +164,7 @@ prepare_leapfrog_projp <- function(pjnz, hiv_steps_per_year = 10L, hTS = 3) {
   
   ## paed input
   v$paed_incid_input <- projp$nosocom_infections_04
+  v$paed_cd4_dist <- projp$paed_cd4_dist
   
   ## HIV positive entrants, right now just doing those without ART
   v$age15hivpop <- projp$age15hivpop
