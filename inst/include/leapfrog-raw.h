@@ -130,7 +130,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
   const TensorMapX1cT incidinput(p_incidinput, sim_years);
   const TensorMapX2cT incrr_sex(p_incrr_sex, NG, sim_years);
   // mkw: hard coded number of 5 year age groups in fert rat for rn
-  const TensorMapX2cT fert_rat(p_fert_rat, pAG_FERT, sim_years);
+  const TensorMapX2cT fert_rat(p_fert_rat, pAG, sim_years);
   const TensorMapX3cT incrr_age(p_incrr_age, pAG - pIDX_HIVADULT, NG, sim_years);
 
   // adult HIV natural history
@@ -332,10 +332,10 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
 
     
     births(t) = 0.0;
-    for(int af = 0; af < pAG_FERT; af++) {
-      births(t) += (totpop1(pIDX_FERT + af, FEMALE, t-1) + totpop1(pIDX_FERT + af, FEMALE, t)) * 0.5 * asfr(af, t);
+   for(int af = 0; af < pAG_FERT; af++) {
+      births(t) += (totpop1(af, FEMALE, t - 1) + totpop1(af, FEMALE, t)) * 0.5 * asfr(af, t);
+     
     }
-    
     
 
     // add births
@@ -672,7 +672,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
     }
     hiv_births(t) = 0.0;
     for(int af = 0; af < pAG; af++) {
-      hiv_births(t) += (hivpop1(pIDX_FERT + af, FEMALE, t) + hivpop1(pIDX_FERT + af, FEMALE, t-1)) * 0.5 * asfr(af, t) * fert_rat(af, t);
+      hiv_births(t) += (hivpop1(pIDX_FERT + af, FEMALE, t + hivpop1(pIDX_FERT + af, FEMALE, t-1) * 0.5) * asfr(af, t) * fert_rat(pIDX_FERT + af, t));
     }
     
 
