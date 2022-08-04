@@ -66,6 +66,12 @@ leapfrogR(const Rcpp::List& demp,
 
   NumericVector artstrat_adult(hTS * hDS * hAG * NG * proj_years);
   artstrat_adult.attr("dim") = NumericVector::create(hTS, hDS, hAG, NG, proj_years);
+  
+ // NumericVector hivstrat_paeds(hDS * pIDX_HIVADULT * NG * proj_years);
+ // hivstrat_paeds.attr("dim") = NumericVector::create(hDS, pIDX_HIVADULT, NG, proj_years);
+  
+  NumericVector coarse_totpop1(hAG * NG * proj_years);
+  coarse_totpop1.attr("dim") = NumericVector::create(hAG, NG, proj_years);
 
   NumericVector births(proj_years);
   
@@ -115,6 +121,7 @@ leapfrogR(const Rcpp::List& demp,
        *INTEGER(projp["scale_cd4_mort"]),
        REAL(projp["art_dropout"]),
        REAL(projp["age15hivpop"]),
+       REAL(projp["paed_incid_input"]),
        proj_years,
        hiv_steps_per_year,
        *INTEGER(projp["t_ART_start"]) - 1, // 0-based indexing vs. R 1-based
@@ -125,6 +132,7 @@ leapfrogR(const Rcpp::List& demp,
        REAL(infections),
        REAL(hivstrat_adult),
        REAL(artstrat_adult),
+     //  REAL(hivstrat_paeds),
        REAL(births),
        REAL(hiv_births),
        REAL(natdeaths),
@@ -132,7 +140,8 @@ leapfrogR(const Rcpp::List& demp,
        REAL(hivdeaths),
        REAL(aidsdeaths_noart),
        REAL(aidsdeaths_art),
-       REAL(artinit));
+       REAL(artinit),
+       REAL(coarse_totpop1));
   } else if (hAG == hAG_COARSE) {
     leapfrog_sim<double, NG, pAG, pIDX_FERT, pAG_FERT,
 		 pIDX_HIVADULT, hAG_COARSE, hDS, hTS>
@@ -158,6 +167,7 @@ leapfrogR(const Rcpp::List& demp,
        *INTEGER(projp["scale_cd4_mort"]),
        REAL(projp["art_dropout"]), 
        REAL(projp["age15hivpop"]),
+       REAL(projp["paed_incid_input"]),
        proj_years,
        hiv_steps_per_year,
        *INTEGER(projp["t_ART_start"]) - 1,  // 0-based indexing vs. R 1-based
@@ -168,6 +178,7 @@ leapfrogR(const Rcpp::List& demp,
        REAL(infections),
        REAL(hivstrat_adult),
        REAL(artstrat_adult),
+   //    REAL(hivstrat_paeds),
        REAL(births),
        REAL(hiv_births),
        REAL(natdeaths),
@@ -175,7 +186,8 @@ leapfrogR(const Rcpp::List& demp,
        REAL(hivdeaths),
        REAL(aidsdeaths_noart),
        REAL(aidsdeaths_art),
-       REAL(artinit));
+       REAL(artinit),
+       REAL(coarse_totpop1));
   } else {
     Rf_error("Invalid HIV stratification age groups (hAG)");
   }
@@ -185,6 +197,7 @@ leapfrogR(const Rcpp::List& demp,
 			  _("hivnpop1") = hivnpop1,
 			  _("hivstrat_adult") = hivstrat_adult,
 			  _("artstrat_adult") = artstrat_adult,
+			//  _("hivstrat_paeds") = hivstrat_paeds,
 			  _("infections") = infections,
 			  _("births") = births,	
 			  _("hiv_births") = hiv_births,			  
@@ -193,7 +206,8 @@ leapfrogR(const Rcpp::List& demp,
 			  _("hivdeaths") = hivdeaths,
 			  _("aidsdeaths_noart") = aidsdeaths_noart,
 			  _("aidsdeaths_art") = aidsdeaths_art,
-			  _("artinit") = artinit);
+			  _("artinit") = artinit,
+			  _("coarse_totpop1") = coarse_totpop1);
 				      
   return ret;
 }

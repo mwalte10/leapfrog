@@ -45,6 +45,17 @@ test_that("Leapfrog matches direct incidence option in EPP-ASM, no ART + hiv mor
   
 })
 
+test_that("Input child transmission matches", {
+  ## Check that prevalence, deaths and incidence  matches between
+  ## the two models
+  pjnz1 <- "../testdata/spectrum/v6.13/bwa_aim-adult-no-art-child-input_spectrum-v6.13_2022-02-12.PJNZ"
+  demog_matches_birthsdeaths(pjnz1, threshold_deaths = 1e-3, threshold_births = 0.01)
+  demog_matches_totpop(pjnz1)
+  transmission_matches(pjnz1, threshold_absolute_pid = c(230, 25, 1))
+  matches_coarse_age_groups(pjnz1, threshold_pid = c(705, 0.01, 0.05))
+})
+
+
 
 
 

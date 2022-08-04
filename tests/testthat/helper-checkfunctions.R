@@ -92,15 +92,15 @@ transmission_matches <- function(pjnz, threshold_absolute_pid = c(250, 25, 3)){
   specres <- eppasm::read_hivproj_output(pjnz1)
 
   ## PREVALENCE
-  expect_true(all(abs(lmod$hivpop1[16:81,,-1] - specres$hivpop[16:81,,-1]) < threshold_absolute_pid[1]),
+  expect_true(all(abs(lmod$hivpop1[1:81,,-1] - specres$hivpop[1:81,,-1]) < threshold_absolute_pid[1]),
               label = paste0("HIV population differs by less than ", threshold_absolute_pid[1], " for all 15+, both sexes, and all years."))
 
   ##INCIDENCE
-  expect_true(all(abs(lmod$infections[16:81,,-1] - specres$infections[16:81,,-1]) < threshold_absolute_pid[2]),
+  expect_true(all(abs(lmod$infections[1:81,,-1] - specres$infections[1:81,,-1]) < threshold_absolute_pid[2]),
               label = paste0("New infections differ by less than ", threshold_absolute_pid[2], " between leapfrog and Spectrum for 15+, both sexes, and all years."))
   
   ##HIV DEATHS
-  expect_true(all(abs(lmod$hivdeaths[16:81,,-1] - specres$hivdeaths[16:81,,-1]) < threshold_absolute_pid[3]),
+  expect_true(all(abs(lmod$hivdeaths[1:81,,-1] - specres$hivdeaths[1:81,,-1]) < threshold_absolute_pid[3]),
               label = paste0("HIV deaths in leapfrog differ by less than ", threshold_absolute_pid[3], " from Spectrum for 15+, both sexes, and all years."))
 
 }

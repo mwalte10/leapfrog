@@ -139,9 +139,11 @@ prepare_leapfrog_demp <- function(pjnz) {
 #'
 #' @export
 prepare_leapfrog_projp <- function(pjnz, hiv_steps_per_year = 10L, hTS = 3) {
-
-  projp <- eppasm::read_hivproj_param(pjnz)
-
+ 
+  ## projp <- eppasm::read_hivproj_param(pjnz)
+  source('C:/Users/mwalters/eppasm/R/read-spectrum-files.R')
+  projp <- read_hivproj_param(pjnz)
+    
   ## Hard coded to expand age groups 15-24, 25-34, 35-44, 45+ to
   ## single-year ages 15:80.
   ## Requires extension for coarse HIV age group stratification
@@ -159,6 +161,9 @@ prepare_leapfrog_projp <- function(pjnz, hiv_steps_per_year = 10L, hTS = 3) {
   x <- rbind(array(data = 0, dim = c(15,61)), x, array(data = 0, dim = c(31,61)))
   rownames(x) <- 0:80
   v$fert_rat <- x
+  
+  ## paed input
+  v$paed_incid_input <- projp$nosocom_infections_04
   
   ## HIV positive entrants, right now just doing those without ART
   v$age15hivpop <- projp$age15hivpop
