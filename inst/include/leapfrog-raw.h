@@ -356,7 +356,7 @@ template <typename Type, int NG, int pAG, int pIDX_FERT, int pAG_FERT,
     
     births(t) = 0.0;
    for(int af = 0; af < pAG_FERT; af++) {
-      births(t) += (totpop1(af, FEMALE, t - 1) + totpop1(af, FEMALE, t)) * 0.5 * asfr(af, t);
+     births(t) += (totpop1(pIDX_FERT + af, FEMALE, t-1) + totpop1(pIDX_FERT + af, FEMALE, t)) * 0.5 * asfr(af, t);
      
     }
     
